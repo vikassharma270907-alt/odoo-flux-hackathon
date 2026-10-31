@@ -1,0 +1,299 @@
+1
+00:00:00,000 --> 00:00:06,452
+Hi, this is Brightloop, a subscription management system built for the Odoo and FLUX Lucknow hackathon.
+
+2
+00:00:06,452 --> 00:00:16,913
+It runs a subscription business end to end: products and plans, quotation to subscription, automatic recurring invoicing, discounts, payments, and a finance dashboard.
+
+3
+00:00:16,913 --> 00:00:23,552
+It's a custom Node and PostgreSQL backend with a React front end, no static data, no backend-as-a-service.
+
+4
+00:00:23,552 --> 00:00:27,624
+Everything you'll see is read from or written to a real database.
+
+5
+00:00:29,000 --> 00:00:31,934
+Subscriptions look simple, and aren't.
+
+6
+00:00:31,934 --> 00:00:37,647
+You have to bill every customer, every period, never twice, never skipped.
+
+7
+00:00:37,647 --> 00:00:43,438
+You have to apply the right discount and the right tax at the right moment.
+
+8
+00:00:43,438 --> 00:00:52,471
+Every subscription has to move through a strict lifecycle, and your finance numbers have to stay honest in real time.
+
+9
+00:00:52,471 --> 00:01:06,368
+Brightloop solves all of that on a real relational database, with three things at its core: idempotent recurring billing, automatic discounts and tax, and proper role-based access.
+
+10
+00:01:08,000 --> 00:01:10,754
+Architecturally it's a clean three-tier app.
+
+11
+00:01:10,754 --> 00:01:14,823
+The React single-page app calls the API with a JWT in the header.
+
+12
+00:01:14,823 --> 00:01:27,717
+The Express API runs every request through the same pipeline: authenticate, check the role, validate the body with Zod, then a thin route hands off to a transactional service, which calls pure domain rules.
+
+13
+00:01:27,717 --> 00:01:32,787
+Those domain rules and the invoice maths are unit-tested with no database at all.
+
+14
+00:01:32,787 --> 00:01:41,237
+And PostgreSQL does the heavy lifting: parameterised SQL everywhere, row locks where it matters, and SQL views that feed the dashboard.
+
+15
+00:01:41,237 --> 00:01:43,928
+Business logic never leaks into the routes.
+
+16
+00:01:46,000 --> 00:01:48,839
+Let's log in as admin and set up the catalogue.
+
+17
+00:01:48,839 --> 00:01:50,531
+Products can carry variants.
+
+18
+00:01:50,531 --> 00:01:59,049
+Here a Brand equals Odoo variant adds five hundred and sixty rupees to the price, so the final price becomes two thousand five hundred sixty.
+
+19
+00:01:59,049 --> 00:02:07,870
+Plans set the billing cadence: daily, weekly, monthly, yearly, along with per-plan flags like auto-close and pause that decide what's legal later.
+
+20
+00:02:07,870 --> 00:02:11,857
+And I've armed a discount: ten percent off for five or more seats.
+
+21
+00:02:11,857 --> 00:02:13,367
+I don't apply it by hand.
+
+22
+00:02:13,367 --> 00:02:19,288
+It attaches itself to the next invoice automatically, and stops the moment it expires or runs out.
+
+23
+00:02:28,000 --> 00:02:29,167
+Now a subscription.
+
+24
+00:02:29,167 --> 00:02:37,890
+I create it from a quotation template, so the plan and the line items come in automatically with a live price preview, then I pick a customer.
+
+25
+00:02:37,890 --> 00:02:41,514
+Watch the status move: Draft, Quotation, Confirmed, Active.
+
+26
+00:02:41,514 --> 00:02:46,183
+The important part is that the buttons only ever offer the legal next state.
+
+27
+00:02:46,183 --> 00:02:49,377
+This is a real state machine enforced on the server.
+
+28
+00:02:49,377 --> 00:02:52,817
+If you try an illegal transition, the API returns a 409.
+
+29
+00:02:52,817 --> 00:02:57,424
+The UI isn't just hiding buttons; the database-backed rules won't allow it.
+
+30
+00:03:08,000 --> 00:03:10,809
+This is the signature moment. I hit Run Billing.
+
+31
+00:03:10,809 --> 00:03:20,466
+The system finds every active subscription that's due and creates one invoice each, four hundred twenty-nine invoices, with the discount and the tax already applied.
+
+32
+00:03:20,466 --> 00:03:22,983
+Now watch what happens when I run it again.
+
+33
+00:03:22,983 --> 00:03:24,270
+Zero invoices created.
+
+34
+00:03:24,270 --> 00:03:26,670
+Four hundred twenty-nine periods skipped.
+
+35
+00:03:26,670 --> 00:03:28,425
+Nothing is billed twice, ever.
+
+36
+00:03:28,425 --> 00:03:39,311
+And that guarantee isn't in the app code, it's in the database: a unique constraint on subscription and period, plus insert on conflict do nothing, backed by a per-subscription row lock.
+
+37
+00:03:39,311 --> 00:03:42,998
+Run it ten times, you still get exactly one invoice per period.
+
+38
+00:03:42,998 --> 00:03:45,632
+Missed periods get caught up on the next run.
+
+39
+00:03:54,000 --> 00:03:55,394
+Payments close the loop.
+
+40
+00:03:55,394 --> 00:04:01,843
+I open an invoice and record a part payment, fourteen hundred rupees against a balance of twenty-eight sixteen.
+
+41
+00:04:01,843 --> 00:04:04,806
+The invoice stays Confirmed with a balance showing.
+
+42
+00:04:04,806 --> 00:04:08,582
+Then I record the rest, and the invoice flips to Paid on its own.
+
+43
+00:04:08,582 --> 00:04:10,906
+Paid is never a status you can just set.
+
+44
+00:04:10,906 --> 00:04:14,857
+It's only reachable by recording real payments that cover the total.
+
+45
+00:04:14,857 --> 00:04:18,168
+And if you try to overpay, the API rejects it with a 409.
+
+46
+00:04:28,000 --> 00:04:30,959
+Access control is strict, and it's three-tiered.
+
+47
+00:04:30,959 --> 00:04:33,424
+Admin owns the catalogue and adds staff.
+
+48
+00:04:33,424 --> 00:04:39,404
+Staff do the daily work: subscriptions, invoices, billing, payments, but can't touch admin setup.
+
+49
+00:04:39,404 --> 00:04:46,308
+Customers only ever see their own subscriptions and invoices; hit a staff route as a customer and you get a 403.
+
+50
+00:04:46,308 --> 00:04:54,013
+Validation is just as strict: try a weak password and you get a clear, field-level error from both the client and the server.
+
+51
+00:04:54,013 --> 00:05:05,848
+And when I sign in as the customer, the admin screens simply aren't there, enforced by a requireRole check that re-runs on every single request, so deactivating a user cuts them off instantly.
+
+52
+00:05:08,000 --> 00:05:10,396
+Back as staff, the finance dashboard.
+
+53
+00:05:10,396 --> 00:05:17,261
+KPI cards for active subscriptions, monthly recurring revenue, revenue collected, outstanding and overdue.
+
+54
+00:05:17,261 --> 00:05:25,357
+A revenue-by-month chart, an overdue table oldest-first, and CSV export, all driven by SQL views, not computed in JavaScript.
+
+55
+00:05:25,357 --> 00:05:33,129
+And this isn't a toy dataset: it's running over roughly five thousand seeded subscriptions and twelve thousand invoices.
+
+56
+00:05:33,129 --> 00:05:36,691
+Every heavy list page responds in tens of milliseconds.
+
+57
+00:05:36,691 --> 00:05:39,152
+The requirement was under two seconds.
+
+58
+00:05:52,000 --> 00:05:54,499
+Let me show you the running product itself.
+
+59
+00:05:54,499 --> 00:05:59,148
+I sign in as admin at the live URL, and I'm straight into the finance dashboard.
+
+60
+00:05:59,148 --> 00:06:01,822
+These are real numbers coming from PostgreSQL.
+
+61
+00:06:01,822 --> 00:06:06,936
+Over to Subscriptions: every status chip you see comes from that enforced state machine.
+
+62
+00:06:06,936 --> 00:06:11,062
+Into Invoices, and this is the one-click moment, Run Billing for today.
+
+63
+00:06:11,062 --> 00:06:18,675
+Four hundred twenty-nine invoices created in one pass, each with tax and discount already applied; run it again and you'd get zero.
+
+64
+00:06:18,675 --> 00:06:20,303
+Finally the customer portal.
+
+65
+00:06:20,303 --> 00:06:26,056
+Signed in as a customer, they see only their own subscription and their own invoices, nothing else.
+
+66
+00:06:26,056 --> 00:06:31,984
+Same codebase, deployed live on Render with a managed PostgreSQL database, behind a single public URL.
+
+67
+00:06:48,000 --> 00:06:53,656
+None of this is just syntax-checked, it's verified end to end against a live PostgreSQL.
+
+68
+00:06:53,656 --> 00:07:00,598
+Forty-seven tests pass: thirty-five unit and access-control tests, twelve database-backed integration tests.
+
+69
+00:07:00,598 --> 00:07:06,512
+Billing idempotency is proven: first run four hundred twenty-nine invoices, second run zero.
+
+70
+00:07:06,512 --> 00:07:07,733
+Role scoping holds.
+
+71
+00:07:07,733 --> 00:07:12,361
+Lists over five thousand rows come back in twenty to forty milliseconds.
+
+72
+00:07:12,361 --> 00:07:19,560
+And it's deployed live on Render with its own managed PostgreSQL, behind one public URL, from the same codebase.
+
+73
+00:07:22,000 --> 00:07:35,929
+So that's Brightloop: a custom relational backend with real dynamic data, enforced state machines, idempotent billing, automatic discounts and tax, role-based access, and a finance dashboard, all verified end to end and running live.
+
+74
+00:07:35,929 --> 00:07:37,125
+Thanks for watching.
+
+75
+00:07:37,125 --> 00:07:41,728
+The live demo and admin login are on screen if you'd like to try it yourself.
