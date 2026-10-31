@@ -10,5 +10,6 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/subscriptions
       JWT_SECRET: demo-secret-change-me
-    command: sh -c "node db/seed.js --reset && node src/server.js"
+    # Seed once; retry a couple of times so a cold-boot Postgres race never leaves a half-seeded DB.
+    command: sh -c "for i in 1 2 3; do node db/seed.js --reset && break; echo \"seed attempt $i failed, retrying...\"; sleep 2; done; node src/server.js"
     ports: ["3000:3000"]

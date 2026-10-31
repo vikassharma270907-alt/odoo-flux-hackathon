@@ -25,7 +25,17 @@ async function main() {
   const t0 = Date.now();
   try {
     await client.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
+    // Make sure the freshly-recreated schema is on the search_path for THIS session
+    // (on a cold Postgres data directory the default search_path can lag the recreate,
+    //  which otherwise shows up as "relation \"users\" does not exist" on first boot).
+    await client.query('SET search_path TO public');
     await client.query(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
+    // Verify the schema actually landed before we insert, so a cold-boot race fails loudly
+    // and retriably rather than half-seeding.
+    const { rows: [chk] } = await client.query(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.tables
+                      WHERE table_schema = 'public' AND table_name = 'users') AS ok`);
+    if (!chk.ok) throw new Error('schema did not apply (users table missing after schema.sql)');
 
     await client.query('BEGIN');
     await client.query('SELECT setseed(0.42)'); // repeatable "random" data
