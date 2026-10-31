@@ -1,0 +1,48 @@
+# Render blueprint for Brightloop (Docker web service + managed PostgreSQL).
+#
+# Why Render and not Vercel: this is a long-running Express server plus a stateful
+# PostgreSQL database. Vercel is serverless with no persistent Postgres, so it is the
+# wrong fit. Render (also Railway or Fly.io) runs the Docker image and a managed DB.
+#
+# Deploy:
+#   1. Push this repo to GitHub (done).
+#   2. On render.com: New -> Blueprint -> pick this repo. Render reads render.yaml.
+#   3. It builds the Dockerfile, provisions Postgres, injects DATABASE_URL, and boots.
+#   4. First boot seeds the database once (seed-if-empty); redeploys keep the data.
+#
+# The frontend is served from the same service (Express serves frontend/dist), so there
+# is a single public URL and no CORS setup.
+
+databases:
+  - name: brightloop-db
+    databaseName: subscriptions
+    plan: free           # free Postgres is fine for a demo; upgrade for the 5k seed if needed
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: brightloop
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health
+    # Seed once on a fresh DB, then start the API (which also serves the built SPA).
+    dockerCommand: sh -c "node db/seed-if-empty.js && node src/server.js"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: brightloop-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true        # Render generates a strong secret
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Keep the seed light on the free tier; raise for a fuller demo.
+      - key: SEED_CUSTOMERS
+        value: "300"
+      - key: SEED_SUBS
+        value: "800"
