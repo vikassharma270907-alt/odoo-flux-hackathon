@@ -14,6 +14,22 @@ npm test
 
 API docs: <http://localhost:3000/api/docs>
 
+## Tests
+
+```bash
+npm test               # 20 unit tests: billing, discounts, state machines, password rules (no database needed)
+npm run test:integration   # real Express app + PostgreSQL: auth, role scoping, is_active revocation,
+                           # rate limiting, billing idempotency, payments, discount expiry
+npm run test:all       # both suites
+```
+
+The integration suite talks to a separate `subscriptions_test` database so it never touches demo data.
+Point it elsewhere with `TEST_DATABASE_URL`; it defaults to the local Docker Postgres. One-time setup:
+
+```bash
+docker exec brightloop-api-db-1 psql -U postgres -c "CREATE DATABASE subscriptions_test;"
+```
+
 ## Frontend (`frontend/`)
 
 React 18 + Vite + Tailwind + React Router + Recharts. Docker serves the built app from the API at <http://localhost:3000>.
@@ -104,8 +120,11 @@ See `/api/docs`. The main ones:
 `POST /invoices/run-billing`, `/invoices` (`confirm`, `cancel`, `send`, `print`), `/payments`,
 `/reports/summary|revenue|overdue|status-breakdown|export.csv`.
 
+## Security
+
+* **Immediate revocation:** every authenticated request re-checks `is_active`, so deactivating a user cuts off access at once (a single primary-key lookup, sub-millisecond).
+* **Login rate-limiting:** `/auth/login` and `/auth/forgot-password` are throttled per IP+email (10 and 5 attempts per 15 minutes) and return `429` with a `Retry-After` header. In-memory and per-process; a multi-instance deployment would move this to Redis.
+
 ## Known limits
 
-* A deactivated user keeps a valid token until it expires (default 8 hours).
 * The reset e-mail prints to the server log unless `SMTP_URL` is set.
-* No login rate-limiting yet.

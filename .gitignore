@@ -92,3 +92,6 @@ out/
 Thumbs.db
 desktop.ini
 
+
+# Starter archive (kept out of version control)
+brightloop-api.zip
