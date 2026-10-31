@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Brightloop — Animated Demo</title>
+<style>
+  :root{
+    --brand:#714B67; --brand-dark:#5a3b52; --teal:#017E84;
+    --ink:#1e293b; --sub:#64748b; --line:#e2e8f0; --bg:#f6f4f7;
+    --emerald:#047857; --red:#dc2626; --amber:#b45309;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 20% -10%,#efe8ee 0%,var(--bg) 55%);
+    color:var(--ink); overflow:hidden;
+  }
+  /* 16:9 stage, scales to fit any window */
+  #stage{
+    position:fixed; inset:0; display:grid; place-items:center;
+  }
+  #frame{
+    width:1280px; height:720px; position:relative;
+    background:var(--bg); border-radius:18px; overflow:hidden;
+    box-shadow:0 30px 80px rgba(40,20,45,.28);
+    transform-origin:center center;
+  }
+  /* ---------- scene machinery ---------- */
+  .scene{position:absolute; inset:0; padding:56px 64px; opacity:0; pointer-events:none;
+    transition:opacity .6s ease; display:flex; flex-direction:column;}
+  .scene.active{opacity:1; pointer-events:auto;}
+  .eyebrow{color:var(--teal); font-weight:700; letter-spacing:.14em; font-size:13px; text-transform:uppercase;}
+  h1{font-size:46px; line-height:1.08; font-weight:800; letter-spacing:-.02em; margin-top:10px;}
+  h2{font-size:34px; font-weight:800; letter-spacing:-.01em;}
+  .lead{font-size:20px; color:var(--sub); margin-top:16px; max-width:900px; line-height:1.5;}
+  .pill{display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line);
+    border-radius:999px; padding:8px 14px; font-size:14px; font-weight:600; color:var(--ink);
+    box-shadow:0 2px 6px rgba(20,10,25,.05);}
+  .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+  .teal-dot{width:10px;height:10px;border-radius:50%;background:var(--teal)}
+
+  /* reveal animation helper */
+  .r{opacity:0; transform:translateY(16px); transition:all .6s cubic-bezier(.2,.7,.2,1);}
+  .scene.active .r{opacity:1; transform:none;}
+  .scene.active .r.d1{transition-delay:.15s}
+  .scene.active .r.d2{transition-delay:.35s}
+  .scene.active .r.d3{transition-delay:.55s}
+  .scene.active .r.d4{transition-delay:.75s}
+  .scene.active .r.d5{transition-delay:.95s}
+  .scene.active .r.d6{transition-delay:1.15s}
+  .scene.active .r.d7{transition-delay:1.35s}
+  .scene.active .r.d8{transition-delay:1.55s}
+
+  /* ---------- title scene ---------- */
+  .logo{display:flex;align-items:center;gap:16px}
+  .logo .mark{width:66px;height:66px;border-radius:16px;
+    background:linear-gradient(135deg,var(--brand),var(--teal));
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:30px;
+    box-shadow:0 10px 24px rgba(113,75,103,.4);}
+  .logo .name{font-size:40px;font-weight:800;letter-spacing:-.02em}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 14px;
+    font-size:14px;font-weight:600;color:var(--brand-dark)}
+  .footer-url{position:absolute;left:64px;bottom:40px;color:var(--sub);font-size:15px}
+
+  /* ---------- browser mock ---------- */
+  .browser{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    box-shadow:0 18px 50px rgba(30,15,35,.14);width:100%}
+  .bar{background:#f1edf1;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .url{margin-left:12px;background:#fff;border:1px solid var(--line);border-radius:7px;
+    padding:5px 12px;font-size:13px;color:var(--sub);flex:1}
+  .appbody{padding:20px 22px;background:#fbfafb;min-height:380px}
+  .topnav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+  .nav{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);background:#fff;border:1px solid var(--line)}
+  .nav.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kpi .l{font-size:12px;color:var(--sub);font-weight:600}
+  .kpi .v{font-size:24px;font-weight:800;margin-top:8px;letter-spacing:-.02em}
+  .v.brand{color:var(--brand)} .v.em{color:var(--emerald)} .v.red{color:var(--red)}
+
+  /* chart */
+  .chartcard{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:14px}
+  .chartcard h3{font-size:14px;color:var(--ink);margin-bottom:12px}
+  .bars{display:flex;align-items:flex-end;gap:14px;height:150px;padding-left:6px}
+  .barwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .bar-el{width:100%;max-width:44px;background:linear-gradient(180deg,var(--brand),var(--brand-dark));
+    border-radius:6px 6px 0 0;height:0;transition:height 1s cubic-bezier(.2,.8,.2,1)}
+  .scene.active .bar-el{height:var(--h)}
+  .barwrap span{font-size:11px;color:var(--sub)}
+
+  /* generic card + table */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;color:var(--sub);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line)}
+  td{padding:9px 10px;border-bottom:1px solid #f1f1f4}
+  .tag{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700}
+  .tag.draft{background:#eef2f7;color:#475569}
+  .tag.quo{background:#fef3c7;color:var(--amber)}
+  .tag.conf{background:#dbeafe;color:#1d4ed8}
+  .tag.active{background:#dcfce7;color:var(--emerald)}
+  .tag.paid{background:#dcfce7;color:var(--emerald)}
+  .tag.overdue{background:#fee2e2;color:var(--red)}
+
+  /* lifecycle state machine */
+  .flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin-top:26px}
+  .state{background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 20px;
+    font-weight:700;font-size:16px;opacity:.25;transform:scale(.94);transition:all .5s}
+  .state.lit{opacity:1;transform:scale(1);border-color:var(--brand);color:var(--brand-dark);
+    box-shadow:0 8px 22px rgba(113,75,103,.22)}
+  .arrow{width:46px;height:3px;background:var(--line);position:relative;opacity:.3;transition:all .5s}
+  .arrow.lit{opacity:1;background:var(--brand)}
+  .arrow::after{content:"";position:absolute;right:-2px;top:-4px;border-left:9px solid var(--line);
+    border-top:6px solid transparent;border-bottom:6px solid transparent}
+  .arrow.lit::after{border-left-color:var(--brand)}
+
+  /* billing run banner */
+  .runbox{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+  .runcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;position:relative;overflow:hidden}
+  .runcard h4{font-size:15px;color:var(--sub);font-weight:700;margin-bottom:14px}
+  .runcard .big{font-size:52px;font-weight:800;letter-spacing:-.03em}
+  .runcard .note{margin-top:10px;font-size:14px;color:var(--sub)}
+  .stamp{position:absolute;top:16px;right:16px;font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px}
+  .stamp.new{background:#dcfce7;color:var(--emerald)}
+  .stamp.skip{background:#fef3c7;color:var(--amber)}
+
+  /* role split */
+  .roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:26px}
+  .rolecard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+  .rolecard .h{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;margin-bottom:12px}
+  .rolecard .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:17px}
+  .rolecard ul{list-style:none;font-size:14px;color:var(--sub);line-height:1.9}
+  .rolecard li::before{content:"✓ ";color:var(--teal);font-weight:800}
+  .rolecard li.no::before{content:"✕ ";color:var(--red)}
+
+  /* arch diagram */
+  .arch{display:flex;align-items:stretch;gap:14px;margin-top:26px}
+  .layer{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}
+  .layer .t{font-weight:800;font-size:17px;margin-bottom:8px}
+  .layer .d{font-size:13px;color:var(--sub);line-height:1.5}
+  .layer.api{border-color:var(--brand)}
+  .layer.db{border-color:var(--teal)}
+  .conn{display:grid;place-items:center;color:var(--sub);font-size:22px}
+
+  /* code callout */
+  .code{background:#1e1b2e;color:#e9e4f0;border-radius:12px;padding:18px 20px;font-family:"SF Mono",Consolas,monospace;
+    font-size:14px;line-height:1.7;margin-top:22px;box-shadow:0 14px 34px rgba(20,10,30,.3)}
+  .code .k{color:#c4b5fd}.code .s{color:#86efac}.code .c{color:#64748b}
+
+  /* feature grid */
+  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+  .feat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+  .feat .fi{font-size:24px}
+  .feat .ft{font-weight:800;margin-top:8px;font-size:16px}
+  .feat .fd{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.5}
+
+  /* closing checklist */
+  .checks{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px 40px;max-width:980px}
+  .check{display:flex;gap:12px;align-items:flex-start;font-size:17px}
+  .check .cb{width:26px;height:26px;border-radius:7px;background:var(--emerald);color:#fff;
+    display:grid;place-items:center;font-weight:800;flex-shrink:0}
+
+  /* ---------- live walkthrough ---------- */
+  .lw-wrap{margin-top:14px;position:relative}
+  .lw-screens{position:relative;height:430px}
+  .lw-screen{position:absolute;inset:0;opacity:0;transform:scale(.98);transition:opacity .5s,transform .5s}
+  .lw-screen.on{opacity:1;transform:none}
+  .cursor{position:absolute;width:22px;height:22px;z-index:20;pointer-events:none;
+    transition:left .9s cubic-bezier(.4,.1,.2,1),top .9s cubic-bezier(.4,.1,.2,1);
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+  .cursor.click::after{content:"";position:absolute;left:-10px;top:-10px;width:40px;height:40px;
+    border-radius:50%;border:2px solid var(--brand);animation:ring .5s ease-out}
+  @keyframes ring{from{transform:scale(.2);opacity:.8}to{transform:scale(1);opacity:0}}
+  .login-box{max-width:360px;margin:34px auto 0;background:#fff;border:1px solid var(--line);
+    border-radius:14px;padding:26px;box-shadow:0 14px 40px rgba(30,15,35,.12)}
+  .login-box .lh{font-weight:800;font-size:20px;margin-bottom:4px}
+  .login-box .ls{font-size:13px;color:var(--sub);margin-bottom:18px}
+  .fakefield{border:1px solid var(--line);border-radius:9px;padding:11px 13px;font-size:14px;
+    margin-bottom:12px;color:var(--ink);min-height:42px;background:#fbfafb}
+  .fakefield.focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(113,75,103,.14)}
+  .fakefield .caret{display:inline-block;width:1.5px;height:16px;background:var(--brand);
+    margin-left:1px;vertical-align:-3px;animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  .loginbtn{background:var(--brand);color:#fff;text-align:center;border-radius:9px;padding:11px;
+    font-weight:700;font-size:14px;transition:transform .15s}
+  .loginbtn.press{transform:scale(.96);background:var(--brand-dark)}
+  .lw-caption{position:absolute;left:0;right:0;bottom:-2px;text-align:center}
+  .lw-caption span{background:rgba(30,20,35,.86);color:#fff;font-size:14px;font-weight:600;
+    padding:7px 16px;border-radius:999px;display:inline-block}
+
+  /* ---------- HUD controls ---------- */
+  #hud{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    display:flex;align-items:center;gap:14px;background:rgba(30,20,35,.82);color:#fff;
+    padding:9px 16px;border-radius:999px;font-size:13px;backdrop-filter:blur(8px);z-index:50;
+    box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  #hud button{background:#fff2;border:none;color:#fff;width:34px;height:34px;border-radius:50%;
+    cursor:pointer;font-size:15px;display:grid;place-items:center;transition:background .2s}
+  #hud button:hover{background:#fff4}
+  #scenelabel{min-width:220px;font-weight:600}
+  #progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--brand),var(--teal));
+    width:0;z-index:60;transition:width .3s linear}
+  #timer{opacity:.7;font-variant-numeric:tabular-nums}
+  .kbd{opacity:.6;font-size:11px}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="stage">
+  <div id="frame">
+
+    <!-- 0 · TITLE -->
+    <section class="scene" data-dur="26">
+      <div class="logo r"><div class="mark">B</div><div class="name">Brightloop</div></div>
+      <div class="eyebrow r d1" style="margin-top:34px">Subscription Management System</div>
+      <h1 class="r d2">Run a subscription business,<br/>end to end.</h1>
+      <p class="lead r d3">Plans and products, quotation to subscription, automatic recurring invoicing,
+        discounts, payments and a finance dashboard — on a custom Node + PostgreSQL backend.</p>
+      <div class="chips r d4">
+        <div class="chip">Node 20</div><div class="chip">Express</div><div class="chip">PostgreSQL 16</div>
+        <div class="chip">Zod</div><div class="chip">JWT</div><div class="chip">React 18</div>
+        <div class="chip">Vite + Tailwind</div><div class="chip">Recharts</div>
+      </div>
+      <div class="footer-url r d5">Odoo × FLUX Lucknow Hackathon '26 &nbsp;·&nbsp; brightloop-do6a.onrender.com</div>
+    </section>
+
+    <!-- 1 · THE PROBLEM / WHAT IT IS -->
+    <section class="scene" data-dur="32">
+      <div class="eyebrow r">The problem</div>
+      <h2 class="r d1">Subscriptions are deceptively hard.</h2>
+      <p class="lead r d2">Bill every customer, every period — never twice, never skipped. Apply the right
+        discount and tax at the right moment. Move each subscription through a strict lifecycle. Keep finance
+        honest in real time. Brightloop does all of it on a real relational database.</p>
+      <div class="fgrid">
+        <div class="feat r d3"><div class="fi">🔁</div><div class="ft">Recurring billing</div><div class="fd">One invoice per subscription per period, idempotent by design.</div></div>
+        <div class="feat r d4"><div class="fi">🏷️</div><div class="ft">Discounts &amp; tax</div><div class="fd">Applied automatically on the next invoice, stop when they expire.</div></div>
+        <div class="feat r d5"><div class="fi">🔐</div><div class="ft">Role-based access</div><div class="fd">Admin, staff and customer each see exactly what they should.</div></div>
+      </div>
+    </section>
+
+    <!-- 2 · ARCHITECTURE -->
+    <section class="scene" data-dur="34">
+      <div class="eyebrow r">Architecture · 3-tier</div>
+      <h2 class="r d1">Thin routes, pure rules, real SQL.</h2>
+      <div class="arch">
+        <div class="layer r d2"><div class="t">React SPA</div><div class="d">Vite + Tailwind. Every form and chart calls <b>/api</b> with a JWT in the header.</div></div>
+        <div class="conn r d3">→</div>
+        <div class="layer api r d4"><div class="t">Express API</div><div class="d">authenticate → requireRole → <b>Zod validate</b> → thin routes → transactional services → pure domain rules.</div></div>
+        <div class="conn r d5">→</div>
+        <div class="layer db r d6"><div class="t">PostgreSQL 16</div><div class="d">Parameterised SQL, row locks, and SQL <b>views</b> for dashboard figures.</div></div>
+      </div>
+      <p class="lead r d7" style="font-size:18px">Business logic lives in <b>src/domain</b> (pure, unit-tested) and
+        <b>src/services</b> (transactions). No static JSON, no BaaS — every value you'll see is read from or written to Postgres.</p>
+    </section>
+
+    <!-- 3 · ADMIN SETUP / CATALOGUE -->
+    <section class="scene" data-dur="42">
+      <div class="eyebrow r">Live demo · Admin</div>
+      <h2 class="r d1" style="margin-bottom:16px">Set up the catalogue.</h2>
+      <div class="browser r d2">
+        <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="url">brightloop-do6a.onrender.com/admin</span></div>
+        <div class="appbody">
+          <div class="topnav">
+            <span class="nav on">Products</span><span class="nav">Plans</span><span class="nav">Taxes</span>
+            <span class="nav">Discounts</span><span class="nav">Templates</span><span class="nav">Staff</span>
+          </div>
+          <div class="card">
+            <table>
+              <tr><th>Product</th><th>Variant</th><th>Base price</th><th>Final</th></tr>
+              <tr><td>Odoo Subscription</td><td><span class="tag quo">Brand = Odoo &nbsp;+₹560</span></td><td>₹2,000</td><td><b>₹2,560</b></td></tr>
+              <tr><td>Starter Plan</td><td>—</td><td>₹999</td><td>₹999</td></tr>
+              <tr><td>10% off · 5+ seats</td><td><span class="tag active">discount · auto-applies</span></td><td>—</td><td>next invoice</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <p class="lead r d4" style="font-size:17px">Products carry variants (the <b>Brand = Odoo, +₹560</b> moment),
+        plans set the billing cadence and per-plan flags, and a percentage discount is armed to apply automatically.</p>
+    </section>
+
+    <!-- 4 · SUBSCRIPTION LIFECYCLE -->
+    <section class="scene" data-dur="40">
+      <div class="eyebrow r">Quote → Subscription → Active</div>
+      <h2 class="r d1">A state machine the server enforces.</h2>
+      <div class="flow">
+        <div class="state s" data-step="1">Draft</div><div class="arrow a" data-step="1"></div>
+        <div class="state s" data-step="2">Quotation</div><div class="arrow a" data-step="2"></div>
+        <div class="state s" data-step="3">Confirmed</div><div class="arrow a" data-step="3"></div>
+        <div class="state s" data-step="4">Active</div><div class="arrow a" data-step="4"></div>
+        <div class="state s" data-step="5">Closed</div>
+      </div>
+      <p class="lead r d6" style="font-size:18px">Create a subscription from a quotation template — plan and lines
+        come in automatically with a live price preview. The buttons only ever offer the <b>legal</b> next state.
+        An illegal transition returns <b>409</b> — the rule is enforced on the server, not just hidden in the UI.</p>
+    </section>
+
+    <!-- 5 · BILLING DAY (signature) -->
+    <section class="scene" data-dur="46">
+      <div class="eyebrow r">The signature moment · Run Billing</div>
+      <h2 class="r d1">Nothing is billed twice. Ever.</h2>
+      <div class="runbox">
+        <div class="runcard r d2"><span class="stamp new">1st run</span><h4>POST /invoices/run-billing</h4>
+          <div class="big" style="color:var(--emerald)"><span class="count" data-to="429">0</span></div>
+          <div class="note">invoices created — each with discount &amp; tax already applied.</div></div>
+        <div class="runcard r d4"><span class="stamp skip">2nd run</span><h4>POST /invoices/run-billing</h4>
+          <div class="big" style="color:var(--amber)"><span class="count" data-to="0">0</span></div>
+          <div class="note"><b>0 created</b>, 429 periods skipped. Run it again — same result.</div></div>
+      </div>
+      <div class="code r d6">
+        <span class="c">-- the database guarantees it, not the app layer</span><br/>
+        <span class="k">INSERT INTO</span> invoices (...) <span class="k">ON CONFLICT</span> (subscription_id, period_start) <span class="k">DO NOTHING</span>;
+      </div>
+    </section>
+
+    <!-- 6 · PAYMENTS -->
+    <section class="scene" data-dur="34">
+      <div class="eyebrow r">Payments</div>
+      <h2 class="r d1" style="margin-bottom:16px">Record a payment, watch it settle.</h2>
+      <div class="browser r d2">
+        <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="url">brightloop-do6a.onrender.com/invoices/INV-1042</span></div>
+        <div class="appbody">
+          <div class="card">
+            <table>
+              <tr><th>Invoice</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th></tr>
+              <tr><td>INV-1042</td><td>₹2,816</td><td>₹1,400</td><td>₹1,416</td><td><span class="tag conf">Confirmed</span></td></tr>
+              <tr class="r d4"><td>INV-1042</td><td>₹2,816</td><td><b>₹2,816</b></td><td>₹0</td><td><span class="tag paid">Paid</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <p class="lead r d5" style="font-size:17px">Record a part payment, then the balance. The invoice flips
+        <b>Confirmed → Paid</b> on its own. Overpayment is rejected with a <b>409</b> — Paid is only ever reached by real payments.</p>
+    </section>
+
+    <!-- 7 · VALIDATION + RBAC -->
+    <section class="scene" data-dur="40">
+      <div class="eyebrow r">Validation &amp; role separation</div>
+      <h2 class="r d1">Everyone sees exactly what they should.</h2>
+      <div class="roles">
+        <div class="rolecard r d2"><div class="h"><span class="ic" style="background:var(--brand)">A</span>Admin</div>
+          <ul><li>Catalogue &amp; staff</li><li>Plans, taxes, discounts</li><li>Everything staff can do</li></ul></div>
+        <div class="rolecard r d3"><div class="h"><span class="ic" style="background:var(--teal)">S</span>Staff</div>
+          <ul><li>Subscriptions &amp; invoices</li><li>Run billing, payments</li><li class="no">Admin setup</li></ul></div>
+        <div class="rolecard r d4"><div class="h"><span class="ic" style="background:#475569">C</span>Customer</div>
+          <ul><li>Own subscriptions only</li><li>Own invoices only</li><li class="no">Any staff route → 403</li></ul></div>
+      </div>
+      <p class="lead r d5" style="font-size:17px">A weak password is refused with a field-level error from both client
+        and server. Sign in as the customer and the admin screens simply aren't there — enforced by <b>requireRole</b>, re-checked on every request.</p>
+    </section>
+
+    <!-- 8 · DASHBOARD + SCALE -->
+    <section class="scene" data-dur="44">
+      <div class="eyebrow r">Finance dashboard · at scale</div>
+      <h2 class="r d1" style="margin-bottom:16px">5,000 subscriptions. Under 2 seconds.</h2>
+      <div class="browser r d2">
+        <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="url">brightloop-do6a.onrender.com/dashboard</span></div>
+        <div class="appbody">
+          <div class="topnav"><span class="nav on">Dashboard</span><span class="nav">Subscriptions</span><span class="nav">Invoices</span><span class="nav">Payments</span></div>
+          <div class="kpis">
+            <div class="kpi"><div class="l">Active subscriptions</div><div class="v"><span class="count" data-to="4871">0</span></div></div>
+            <div class="kpi"><div class="l">MRR (before tax)</div><div class="v brand">₹<span class="count" data-to="38">0</span>L</div></div>
+            <div class="kpi"><div class="l">Revenue collected</div><div class="v em">₹<span class="count" data-to="212">0</span>L</div></div>
+            <div class="kpi"><div class="l">Outstanding</div><div class="v">₹<span class="count" data-to="46">0</span>L</div></div>
+            <div class="kpi"><div class="l">Overdue (118)</div><div class="v red">₹<span class="count" data-to="9">0</span>L</div></div>
+          </div>
+          <div class="chartcard">
+            <h3>Revenue collected by month</h3>
+            <div class="bars">
+              <div class="barwrap"><div class="bar-el" style="--h:42%"></div><span>Apr</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:58%"></div><span>May</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:51%"></div><span>Jun</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:73%"></div><span>Jul</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:66%"></div><span>Aug</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:88%"></div><span>Sep</span></div>
+              <div class="barwrap"><div class="bar-el" style="--h:100%"></div><span>Oct</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="lead r d6" style="font-size:16px">KPI cards, a revenue chart, an overdue table and CSV export —
+        all driven by SQL views. Heavy lists over thousands of rows respond in tens of milliseconds.</p>
+    </section>
+
+    <!-- 9 · LIVE APP WALKTHROUGH -->
+    <section class="scene" data-dur="56" id="walk">
+      <div class="eyebrow r">Live app · real walkthrough</div>
+      <h2 class="r d1" style="margin-bottom:6px">This is the running product.</h2>
+      <div class="browser r d2 lw-wrap">
+        <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>
+          <span class="url" id="lw-url">brightloop-do6a.onrender.com/login</span></div>
+        <div class="appbody" style="min-height:430px;padding:0">
+          <div class="lw-screens">
+
+            <!-- cursor -->
+            <svg class="cursor" id="lw-cursor" style="left:50%;top:50%" viewBox="0 0 24 24"><path fill="#1e1b2e" stroke="#fff" stroke-width="1.2" d="M4 2l14 8-6 1.5 3.5 7-2.6 1.1-3.4-6.9L5.5 17z"/></svg>
+
+            <!-- A: login -->
+            <div class="lw-screen on" data-lw="0">
+              <div class="login-box">
+                <div class="lh">Sign in to Brightloop</div>
+                <div class="ls">Use your team account</div>
+                <div class="fakefield" id="lw-email">admin@brightloop.test</div>
+                <div class="fakefield" id="lw-pass">••••••••••</div>
+                <div class="loginbtn" id="lw-signin">Sign in</div>
+              </div>
+            </div>
+
+            <!-- B: dashboard -->
+            <div class="lw-screen" data-lw="1" style="padding:20px 22px;background:#fbfafb">
+              <div class="topnav"><span class="nav on">Dashboard</span><span class="nav">Subscriptions</span><span class="nav">Invoices</span><span class="nav">Payments</span><span class="nav">Admin</span></div>
+              <div class="kpis">
+                <div class="kpi"><div class="l">Active subs</div><div class="v">4,871</div></div>
+                <div class="kpi"><div class="l">MRR</div><div class="v brand">₹38L</div></div>
+                <div class="kpi"><div class="l">Collected</div><div class="v em">₹212L</div></div>
+                <div class="kpi"><div class="l">Outstanding</div><div class="v">₹46L</div></div>
+                <div class="kpi"><div class="l">Overdue</div><div class="v red">₹9L</div></div>
+              </div>
+              <div class="chartcard" style="margin-top:12px"><h3>Revenue collected by month</h3>
+                <div class="bars" style="height:120px">
+                  <div class="barwrap"><div class="bar-el" style="--h:42%;height:42%"></div><span>Apr</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:58%;height:58%"></div><span>May</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:51%;height:51%"></div><span>Jun</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:73%;height:73%"></div><span>Jul</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:66%;height:66%"></div><span>Aug</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:88%;height:88%"></div><span>Sep</span></div>
+                  <div class="barwrap"><div class="bar-el" style="--h:100%;height:100%"></div><span>Oct</span></div>
+                </div></div>
+            </div>
+
+            <!-- C: subscriptions list -->
+            <div class="lw-screen" data-lw="2" style="padding:20px 22px;background:#fbfafb">
+              <div class="topnav"><span class="nav">Dashboard</span><span class="nav on">Subscriptions</span><span class="nav">Invoices</span><span class="nav">Payments</span><span class="nav">Admin</span></div>
+              <div class="card"><table>
+                <tr><th>Number</th><th>Customer</th><th>Plan</th><th>Status</th></tr>
+                <tr><td>SUB-2041</td><td>Aarav Mehta</td><td>Pro (monthly)</td><td><span class="tag active">active</span></td></tr>
+                <tr><td>SUB-2042</td><td>Kiran Rao</td><td>Starter (monthly)</td><td><span class="tag conf">confirmed</span></td></tr>
+                <tr><td>SUB-2043</td><td>Neha Gupta</td><td>Pro (yearly)</td><td><span class="tag quo">quotation</span></td></tr>
+                <tr><td>SUB-2044</td><td>Odoo India</td><td>Enterprise (monthly)</td><td><span class="tag draft">draft</span></td></tr>
+              </table></div>
+            </div>
+
+            <!-- D: invoices + run billing -->
+            <div class="lw-screen" data-lw="3" style="padding:20px 22px;background:#fbfafb">
+              <div class="topnav"><span class="nav">Dashboard</span><span class="nav">Subscriptions</span><span class="nav on">Invoices</span><span class="nav">Payments</span><span class="nav">Admin</span></div>
+              <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><span class="loginbtn" id="lw-runbill" style="padding:9px 16px;font-size:13px">Run billing for today</span></div>
+              <div id="lw-runbanner" style="opacity:0;transition:opacity .4s;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:9px;padding:10px 13px;font-size:13px;margin-bottom:10px">
+                429 subscriptions due · <b>429</b> invoices created · 0 periods already billed</div>
+              <div class="card"><table>
+                <tr><th>Invoice</th><th>Customer</th><th>Total</th><th>Balance</th><th>Status</th></tr>
+                <tr><td>INV-1042</td><td>Aarav Mehta</td><td>₹2,816</td><td>₹2,816</td><td><span class="tag conf">confirmed</span></td></tr>
+                <tr><td>INV-1043</td><td>Kiran Rao</td><td>₹1,099</td><td>₹1,099</td><td><span class="tag conf">confirmed</span></td></tr>
+                <tr><td>INV-1044</td><td>Neha Gupta</td><td>₹11,988</td><td>₹0</td><td><span class="tag paid">paid</span></td></tr>
+              </table></div>
+            </div>
+
+            <!-- E: customer portal -->
+            <div class="lw-screen" data-lw="4" style="padding:20px 22px;background:#fbfafb">
+              <div class="topnav"><span class="nav on">My account</span></div>
+              <div class="card" style="margin-bottom:12px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">My subscriptions</div>
+                <table><tr><th>Number</th><th>Plan</th><th>Status</th><th>Manage</th></tr>
+                <tr><td>SUB-2041</td><td>Pro (monthly)</td><td><span class="tag active">active</span></td><td style="color:var(--sub)">Pause · Renew · Close</td></tr></table></div>
+              <div class="card"><div style="font-weight:700;font-size:13px;margin-bottom:8px">My invoices</div>
+                <table><tr><th>Invoice</th><th>Total</th><th>Balance</th><th>Status</th></tr>
+                <tr><td>INV-1042</td><td>₹2,816</td><td>₹0</td><td><span class="tag paid">paid</span></td></tr></table></div>
+            </div>
+
+          </div>
+          <div class="lw-caption"><span id="lw-cap">Signing in as admin…</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 · PROOF / VERIFICATION -->
+    <section class="scene" data-dur="34">
+      <div class="eyebrow r">Verified end to end</div>
+      <h2 class="r d1">Not just syntax-checked — proven.</h2>
+      <div class="fgrid">
+        <div class="feat r d2"><div class="fi">✅</div><div class="ft">47 passing tests</div><div class="fd">35 unit + access-control, 12 DB-backed integration — all green.</div></div>
+        <div class="feat r d3"><div class="fi">♻️</div><div class="ft">Idempotent billing</div><div class="fd">First run created 429 invoices; second run created 0.</div></div>
+        <div class="feat r d4"><div class="fi">⚡</div><div class="ft">~20–40 ms lists</div><div class="fd">Over 5,000 subscriptions. Requirement was under 2 seconds.</div></div>
+        <div class="feat r d5"><div class="fi">🔒</div><div class="ft">RBAC holds</div><div class="fd">Customer hits a staff route → 403. Deactivation cuts access instantly.</div></div>
+        <div class="feat r d6"><div class="fi">🌐</div><div class="ft">Deployed live</div><div class="fd">Render + managed PostgreSQL, one public URL, same codebase.</div></div>
+        <div class="feat r d7"><div class="fi">📄</div><div class="ft">Real REST API</div><div class="fd">OpenAPI docs at /api/docs. Parameterised SQL throughout.</div></div>
+      </div>
+    </section>
+
+    <!-- 10 · CLOSE -->
+    <section class="scene" data-dur="26">
+      <div class="logo r"><div class="mark">B</div><div class="name">Brightloop</div></div>
+      <h2 class="r d1" style="margin-top:30px">A complete subscription platform.</h2>
+      <div class="checks">
+        <div class="check r d2"><span class="cb">✓</span><div>Custom relational backend, real dynamic data</div></div>
+        <div class="check r d3"><span class="cb">✓</span><div>Enforced state machines &amp; idempotent billing</div></div>
+        <div class="check r d4"><span class="cb">✓</span><div>Automatic discounts, tax and payments</div></div>
+        <div class="check r d5"><span class="cb">✓</span><div>Role-based access &amp; a finance dashboard</div></div>
+      </div>
+      <p class="lead r d6">Verified end to end with 47 passing tests and deployed live.</p>
+      <div class="footer-url r d7">brightloop-do6a.onrender.com &nbsp;·&nbsp; admin@brightloop.test / Admin@12345</div>
+    </section>
+
+  </div>
+</div>
+
+<audio id="deck-audio" preload="auto"></audio>
+<div id="hud">
+  <button id="prev" title="Previous (←)">◀</button>
+  <button id="play" title="Play / Pause (space)">⏸</button>
+  <button id="next" title="Next (→)">▶</button>
+  <button id="audio-toggle" title="Toggle Voiceover (M)">🔊</button>
+  <span id="scenelabel"></span>
+  <span id="timer">0:00</span>
+  <span class="kbd">space · ← → · M mute · R reset · F full</span>
+</div>
+
+<script>
+(function(){
+  const scenes = Array.from(document.querySelectorAll('.scene'));
+  const titles = ["Title","The problem","Architecture","Admin · catalogue","Lifecycle",
+    "Run Billing","Payments","Validation & RBAC","Dashboard","Live walkthrough","Verification","Close"];
+  const durations = scenes.map(s => parseInt(s.dataset.dur,10)); // seconds
+  const total = durations.reduce((a,b)=>a+b,0);
+  let i = 0, elapsedInScene = 0, playing = true, lastTs = null, lifecycleTimers = [];
+
+  const frame = document.getElementById('frame');
+  const label = document.getElementById('scenelabel');
+  const timer = document.getElementById('timer');
+  const prog  = document.getElementById('progress');
+
+  function fit(){
+    const pad = 40;
+    const sx = (window.innerWidth - pad) / 1280;
+    const sy = (window.innerHeight - 70) / 720;  // leave room for HUD
+    frame.style.transform = 'scale(' + Math.min(sx, sy) + ')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  function fmt(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+
+  function runCounters(scene){
+    scene.querySelectorAll('.count').forEach(el=>{
+      const to = parseFloat(el.dataset.to); const start = performance.now(); const dur=1400;
+      function tick(t){
+        const p = Math.min(1,(t-start)/dur); const eased = 1-Math.pow(1-p,3);
+        el.textContent = Math.round(to*eased).toLocaleString('en-IN');
+        if(p<1) requestAnimationFrame(tick);
+      }
+      el.textContent='0'; requestAnimationFrame(tick);
+    });
+  }
+
+  function runLifecycle(scene){
+    lifecycleTimers.forEach(clearTimeout); lifecycleTimers=[];
+    const states = scene.querySelectorAll('.state.s');
+    const arrows = scene.querySelectorAll('.arrow.a');
+    states.forEach(s=>s.classList.remove('lit'));
+    arrows.forEach(a=>a.classList.remove('lit'));
+    const seq = [states[0], arrows[0], states[1], arrows[1], states[2], arrows[2], states[3], arrows[3], states[4]];
+    seq.forEach((el,idx)=>{ if(!el) return;
+      lifecycleTimers.push(setTimeout(()=>{ el.classList.add(el.classList.contains('arrow')?'lit':'lit'); }, 700 + idx*650));
+    });
+  }
+
+  let walkTimers = [];
+  function runWalkthrough(scene){
+    walkTimers.forEach(clearTimeout); walkTimers=[];
+    const cursor = scene.querySelector('#lw-cursor');
+    const screens = scene.querySelectorAll('.lw-screen');
+    const cap = scene.querySelector('#lw-cap');
+    const url = scene.querySelector('#lw-url');
+    const banner = scene.querySelector('#lw-runbanner');
+    const field = scene.querySelector('.lw-wrap');
+    const T = (ms,fn)=>walkTimers.push(setTimeout(fn,ms));
+
+    const showScreen = idx => screens.forEach((s,k)=>s.classList.toggle('on', k===idx));
+    // move cursor to the centre of an element within the browser mock
+    const moveTo = (el)=>{ if(!el||!cursor) return;
+      const fr = scene.querySelector('.lw-screens').getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      const scale = parseFloat(getComputedStyle(frame).transform.split(',')[0].replace('matrix(','')) || 1;
+      cursor.style.left = ((er.left - fr.left)/scale + er.width/scale/2) + 'px';
+      cursor.style.top  = ((er.top  - fr.top )/scale + er.height/scale/2) + 'px';
+    };
+    const click = ()=>{ cursor.classList.remove('click'); void cursor.offsetWidth; cursor.classList.add('click'); };
+
+    // reset
+    showScreen(0); if(banner) banner.style.opacity=0;
+    const pass = scene.querySelector('#lw-pass'), email = scene.querySelector('#lw-email'), signin = scene.querySelector('#lw-signin');
+    cursor.style.left='60%'; cursor.style.top='20%';
+
+    // 0–7s : login
+    cap.textContent='Signing in as admin…';
+    T(600,()=>moveTo(signin));
+    T(2300,()=>{ click(); signin.classList.add('press'); });
+    T(2700,()=>signin.classList.remove('press'));
+    // 3s : dashboard
+    T(3200,()=>{ showScreen(1); url.textContent='brightloop-do6a.onrender.com/dashboard'; cap.textContent='Finance dashboard — live KPIs over 5,000 subscriptions'; });
+    T(3600,()=>moveTo(scene.querySelectorAll('.lw-screen')[1].querySelector('.chartcard')));
+    // 14s : subscriptions
+    T(14000,()=>{ showScreen(2); url.textContent='brightloop-do6a.onrender.com/subscriptions'; cap.textContent='Subscriptions — status chips from the enforced state machine'; });
+    T(14600,()=>moveTo(scene.querySelectorAll('.lw-screen')[2].querySelector('.tag.active')));
+    // 24s : invoices + run billing
+    T(24000,()=>{ showScreen(3); url.textContent='brightloop-do6a.onrender.com/invoices'; cap.textContent='Invoices — one click runs billing for every due subscription'; });
+    T(25000,()=>moveTo(scene.querySelector('#lw-runbill')));
+    T(27000,()=>{ click(); });
+    T(27400,()=>{ if(banner) banner.style.opacity=1; cap.textContent='429 invoices created — run it again and you get zero'; });
+    // 38s : portal
+    T(38000,()=>{ showScreen(4); url.textContent='brightloop-do6a.onrender.com/portal'; cap.textContent='Customer portal — only their own subscriptions & invoices'; });
+    T(38600,()=>moveTo(scene.querySelectorAll('.lw-screen')[4].querySelector('.card')));
+    T(48000,()=>{ cap.textContent='One codebase, deployed live on Render + managed PostgreSQL'; });
+  }
+
+  const deckAudio = document.getElementById('deck-audio');
+  const audioBtn  = document.getElementById('audio-toggle');
+  let audioEnabled = true;
+
+  function updateAudio(){
+    if(!deckAudio) return;
+    const sceneNum = String(i + 1).padStart(2, '0');
+    deckAudio.src = 'audio/scene_' + sceneNum + '.mp3';
+    if(audioEnabled && playing){
+      deckAudio.play().catch(e=>console.log('Audio autoplay prevented, click to enable sound'));
+    } else {
+      deckAudio.pause();
+    }
+  }
+
+  function toggleAudio(){
+    audioEnabled = !audioEnabled;
+    audioBtn.textContent = audioEnabled ? '🔊' : '🔇';
+    if(audioEnabled && playing) deckAudio.play().catch(()=>{});
+    else deckAudio.pause();
+  }
+  if(audioBtn) audioBtn.onclick = toggleAudio;
+
+  function show(n){
+    i = (n + scenes.length) % scenes.length;
+    elapsedInScene = 0;
+    scenes.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    label.textContent = (i+1)+'/'+scenes.length+' · '+titles[i];
+    updateAudio();
+    const active = scenes[i];
+    // trigger per-scene animations slightly after fade-in
+    setTimeout(()=>{ if(scenes[i]!==active) return;
+      runCounters(active);
+      if(active.querySelector('.state.s')) runLifecycle(active);
+      if(active.id==='walk') runWalkthrough(active);
+    }, 450);
+  }
+
+  function loop(ts){
+    if(lastTs==null) lastTs=ts;
+    const dt=(ts-lastTs)/1000; lastTs=ts;
+    if(playing){
+      elapsedInScene += dt;
+      if(elapsedInScene >= durations[i]){
+        if(i===scenes.length-1){ playing=false; document.getElementById('play').textContent='↻'; }
+        else show(i+1);
+      }
+    }
+    // progress across whole presentation
+    let before=0; for(let k=0;k<i;k++) before+=durations[k];
+    const current = before + Math.min(elapsedInScene, durations[i]);
+    prog.style.width = (current/total*100)+'%';
+    timer.textContent = fmt(current)+' / '+fmt(total);
+    requestAnimationFrame(loop);
+  }
+
+  document.getElementById('next').onclick = ()=>show(i+1);
+  document.getElementById('prev').onclick = ()=>show(i-1);
+  document.getElementById('play').onclick = ()=>{
+    if(i===scenes.length-1 && !playing && elapsedInScene>=durations[i]){ show(0); playing=true; }
+    else playing=!playing;
+    document.getElementById('play').textContent = playing?'⏸':'▶';
+    if(audioEnabled && playing) deckAudio.play().catch(()=>{});
+    else deckAudio.pause();
+  };
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') show(i+1);
+    else if(e.key==='ArrowLeft') show(i-1);
+    else if(e.key===' '){ e.preventDefault(); document.getElementById('play').click(); }
+    else if(e.key.toLowerCase()==='m'){ toggleAudio(); }
+    else if(e.key.toLowerCase()==='r'){ show(0); playing=true; document.getElementById('play').textContent='⏸'; }
+    else if(e.key.toLowerCase()==='f'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  });
+
+  show(0);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

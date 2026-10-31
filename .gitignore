@@ -95,3 +95,10 @@ desktop.ini
 
 # Starter archive (kept out of version control)
 brightloop-api.zip
+
+# Demo video intermediate artifacts (regenerable from scripts; keep the final mp4 only)
+demo-video/audio/
+demo-video/scene*.mp3
+demo-video/test_voice.mp3
+demo-video/*.log
+demo-video/node_modules/
