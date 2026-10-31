@@ -19,11 +19,58 @@ export const Card = ({ title, action, children }) => (
   </section>
 );
 
-export const Stat = ({ label, value, tone = '' }) => (
-  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-    <div className="text-[11px] font-semibold uppercase text-slate-500">{label}</div>
+/**
+ * Metric card. `sub` is a supporting line under the value, `trend` is an
+ * optional {dir:'up'|'down', text} chip, and `icon`/`iconTone` render a soft
+ * tinted chip in the corner (e.g. an emoji or short glyph).
+ */
+export const Stat = ({ label, value, tone = '', sub, trend, icon, iconTone = 'bg-brand/10 text-brand' }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col">
+    <div className="flex items-start justify-between gap-2">
+      <div className="text-[11px] font-semibold uppercase text-slate-500 leading-tight">{label}</div>
+      {icon && <span className={`shrink-0 w-8 h-8 grid place-items-center rounded-lg text-sm ${iconTone}`}>{icon}</span>}
+    </div>
     <div className={`text-2xl font-bold mt-1 ${tone}`}>{value}</div>
+    {sub && <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">{sub}</div>}
+    {trend && (
+      <div className={`text-[11px] font-semibold mt-2 inline-flex items-center gap-1 ${trend.dir === 'down' ? 'text-red-600' : 'text-emerald-600'}`}>
+        <span>{trend.dir === 'down' ? '↓' : '↑'}</span><span>{trend.text}</span>
+      </div>
+    )}
   </div>
+);
+
+/** Status funnel: a labelled, colour-dotted count list (subscription lifecycle, etc.). */
+const DOT = {
+  draft: 'bg-slate-400', quotation: 'bg-sky-500', confirmed: 'bg-teal-500',
+  active: 'bg-emerald-500', paused: 'bg-amber-500', closed: 'bg-slate-300',
+};
+export const Funnel = ({ items }) => (
+  <ul className="space-y-1.5">
+    {items.map((it) => (
+      <li key={it.label} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2">
+        <span className="flex items-center gap-2 text-xs font-medium text-slate-700">
+          <span className={`w-2 h-2 rounded-full ${DOT[it.label] || 'bg-slate-400'}`} />
+          <span className="uppercase tracking-wide">{it.label}</span>
+        </span>
+        <span className="text-sm font-bold text-slate-800">{it.count}</span>
+      </li>
+    ))}
+  </ul>
+);
+
+/** Page hero: title, one-line description, and a slot for primary actions. */
+export const Hero = ({ eyebrow, title, description, actions }) => (
+  <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        {eyebrow && <div className="text-[11px] font-semibold uppercase tracking-wide text-brand/70">{eyebrow}</div>}
+        <h1 className="text-xl font-bold text-slate-900 mt-0.5">{title}</h1>
+        {description && <p className="text-sm text-slate-500 mt-1 max-w-xl">{description}</p>}
+      </div>
+      {actions && <div className="flex flex-wrap gap-2 shrink-0">{actions}</div>}
+    </div>
+  </section>
 );
 
 export const Btn = ({ kind = 'primary', className = '', ...p }) => (
