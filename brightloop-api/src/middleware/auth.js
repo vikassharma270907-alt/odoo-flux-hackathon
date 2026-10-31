@@ -1,19 +1,28 @@
 'use strict';
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { pool } = require('../db');
 const { HttpError } = require('../domain/rules');
 
 const sign = (user, customerId = null) =>
   jwt.sign({ sub: user.id, role: user.role, cid: customerId }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 
-function authenticate(req, res, next) {
+// Verifies the JWT, then confirms the account still exists and is active on every request,
+// so deactivating a user takes effect immediately instead of waiting for the token to expire.
+// The lookup is a single primary-key read (sub-millisecond) so it does not affect list timings.
+async function authenticate(req, res, next) {
   const h = req.headers.authorization || '';
   if (!h.startsWith('Bearer ')) return next(new HttpError(401, 'Authentication required'));
+  let p;
   try {
-    const p = jwt.verify(h.slice(7), config.jwtSecret);
+    p = jwt.verify(h.slice(7), config.jwtSecret);
+  } catch { return next(new HttpError(401, 'Invalid or expired token')); }
+  try {
+    const { rows: [u] } = await pool.query('SELECT is_active FROM users WHERE id = $1', [p.sub]);
+    if (!u || !u.is_active) return next(new HttpError(401, 'This account is no longer active'));
     req.user = { id: p.sub, role: p.role, customerId: p.cid };
     return next();
-  } catch { return next(new HttpError(401, 'Invalid or expired token')); }
+  } catch (err) { return next(err); }
 }
 
 const requireRole = (...roles) => (req, res, next) =>
