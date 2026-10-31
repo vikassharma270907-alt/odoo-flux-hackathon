@@ -30,8 +30,9 @@ services:
     dockerContext: .
     plan: free
     healthCheckPath: /api/health
-    # Seed once on a fresh DB, then start the API (which also serves the built SPA).
-    dockerCommand: sh -c "node db/seed-if-empty.js && node src/server.js"
+    # Start command is baked into the Dockerfile CMD (seed-if-empty then start),
+    # which runs reliably in the image's /app WORKDIR. No dockerCommand override here
+    # to avoid an exit-127 (command-not-found) from an unexpected working directory.
     envVars:
       - key: DATABASE_URL
         fromDatabase:
