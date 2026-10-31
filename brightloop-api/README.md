@@ -6,6 +6,16 @@ Every form, status change and chart reads from or writes to PostgreSQL. There ar
 **🔴 Live demo:** <https://brightloop-do6a.onrender.com> — log in as `admin@brightloop.test` / `Admin@12345`.
 (Free tier sleeps after ~15 min idle; the first request may take ~30–50s to wake.)
 
+## Admin login (demo)
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@brightloop.test | Admin@12345 |
+| Staff | staff@brightloop.test | Staff@12345 |
+| Customer | customer@brightloop.test | Customer@123 |
+
+> Use the Admin account to reach the admin setup screens (products, plans, taxes, discounts, templates, staff).
+
 **Verified end-to-end** against a live seeded database (1,500 customers / 5,000 subscriptions): billing is idempotent
 (a second run bills nothing twice), role scoping holds, and every heavy list page responds in **under 60 ms** — well
 inside the 2-second target. 35 unit + access-control tests via `npm test`, plus 12 DB-backed API
