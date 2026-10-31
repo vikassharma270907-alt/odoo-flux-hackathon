@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard.jsx';
 import Subscriptions from './pages/Subscriptions.jsx';
 import Invoices from './pages/Invoices.jsx';
 import Portal from './pages/Portal.jsx';
+import Admin from './pages/Admin.jsx';
+import Payments from './pages/Payments.jsx';
+import ResetPassword from './pages/ResetPassword.jsx';
 
 const home = (role) => (role === 'customer' ? '/portal' : '/dashboard');
 
@@ -23,7 +26,13 @@ function Layout() {
   const { user, logout } = useAuth();
   const links = user.role === 'customer'
     ? [['/portal', 'My account']]
-    : [['/dashboard', 'Dashboard'], ['/subscriptions', 'Subscriptions'], ['/invoices', 'Invoices']];
+    : [
+        ['/dashboard', 'Dashboard'],
+        ['/subscriptions', 'Subscriptions'],
+        ['/invoices', 'Invoices'],
+        ['/payments', 'Payments'],
+        ...(user.role === 'admin' ? [['/admin', 'Admin']] : []),
+      ];
   return (
     <div className="min-h-screen flex flex-col">
       <OfflineBanner />
@@ -52,11 +61,14 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to={home(user.role)} replace /> : <Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<Protected />}>
         <Route index element={<Navigate to={home(user?.role)} replace />} />
         <Route path="dashboard" element={<Role roles={staff}><Dashboard /></Role>} />
         <Route path="subscriptions" element={<Role roles={staff}><Subscriptions /></Role>} />
         <Route path="invoices" element={<Role roles={staff}><Invoices /></Role>} />
+        <Route path="payments" element={<Role roles={staff}><Payments /></Role>} />
+        <Route path="admin" element={<Role roles={['admin']}><Admin /></Role>} />
         <Route path="portal" element={<Role roles={['customer']}><Portal /></Role>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

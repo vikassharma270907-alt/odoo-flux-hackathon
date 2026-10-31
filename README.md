@@ -81,6 +81,7 @@ Then open:
 - **/dashboard** (admin/staff) — finance summary stats, one-click "Run billing cycle", recent subscriptions
 - **/ui/subscriptions** — list + generate invoice per subscription
 - **/ui/invoices** — list with overdue flags, confirm + mark-paid actions
+- **/ui/discounts** (admin only) — list all discount rules with an active/inactive badge, plus a create form (type, value, scope, product, min purchase/qty, usage limit, date window)
 - **/portal** (customer) — the customer sees only their own subscriptions and invoices
 
 A demo dataset is seeded on first run so the dashboard shows real numbers immediately.

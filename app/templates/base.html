@@ -56,6 +56,7 @@
       <a href="/dashboard">Dashboard</a>
       <a href="/ui/subscriptions">Subscriptions</a>
       <a href="/ui/invoices">Invoices</a>
+      {% if user.role.value == 'admin' %}<a href="/ui/discounts">Discounts</a>{% endif %}
     {% else %}
       <a href="/portal">My Subscriptions</a>
       <a href="/ui/invoices">My Invoices</a>

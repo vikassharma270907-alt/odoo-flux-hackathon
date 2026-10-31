@@ -19,6 +19,13 @@
   </form>
   <a class="btn secondary" href="/ui/subscriptions">View subscriptions</a>
   <a class="btn secondary" href="/ui/invoices">View invoices</a>
+  {% if user.role.value == 'admin' %}<a class="btn secondary" href="/ui/discounts">Manage discounts</a>{% endif %}
+  {% if user.role.value == 'admin' %}
+  <form class="inline" method="post" action="/ui/demo-reset"
+        onsubmit="return confirm('Reset all demo data to the seeded state?');">
+    <button class="btn secondary" type="submit">Reset demo data</button>
+  </form>
+  {% endif %}
 </div>
 
 {% if message %}<p class="muted" style="margin-top:1rem;">{{ message }}</p>{% endif %}
