@@ -1,145 +1,180 @@
-# 🚀 Brightloop Subscription Management System
+# Brightloop — Subscription Management System
 
-Odoo x FLUX Lucknow Hackathon '26 — Problem Statement: **Subscription Management System**.
+A unified subscription-billing platform: products and plans, quotation-to-subscription,
+automatic recurring invoicing, discounts, payments and a finance dashboard.
 
-One unified platform that runs the full life of a subscription business for *Brightloop Software*: products and plans → quotations → subscriptions → automated recurring billing → payments → revenue reporting. It replaces spreadsheets, hand-typed invoices, and manually-built quarterly reports.
+Built for the **Odoo x FLUX Lucknow Hackathon '26**. Problem statement: *Subscription Management System*.
+
+**Stack:** Node 20 · Express 4 · PostgreSQL 16 · Zod · JWT · React 18 · Vite · Tailwind · Recharts.
+Custom REST API over a real relational database. No static JSON, no BaaS — every form, status change
+and chart reads from or writes to PostgreSQL.
+
+The application lives in [`brightloop-api/`](./brightloop-api). This file is the map; the full technical
+README is [`brightloop-api/README.md`](./brightloop-api/README.md).
 
 ---
 
-## ✨ Features (mapped to the brief)
-
-| Scene in the brief | Implemented as |
-| :--- | :--- |
-| A new customer signs up | `POST /api/v1/auth/signup` — unique email, strong-password policy, JWT issued |
-| Password reset | `POST /api/v1/auth/password-reset/request` + `/confirm` (token to registered email) |
-| Roles & access | Admin / staff / customer RBAC; only admin adds staff and creates catalog + discounts |
-| Launching a new plan | Products with **variants** (e.g. Odoo brand +560), plans with billing period, min qty, availability dates, per-plan lifecycle flags |
-| Quote → subscription | Quotation templates (valid N days); subscription number, lines, **Draft → Quotation → Confirmed → Active → Closed** |
-| Billing day | `POST /api/v1/billing/run` generates every due invoice; **idempotent** (never bills twice or skips), auto taxes |
-| A better price (discounts) | Admin-only fixed/percentage discounts, min purchase/qty, date window, usage limit, product or subscription scope; auto-applied to the next invoice |
-| The money comes in | `POST /api/v1/payments` records method/amount/date/note; invoice flips Draft → Confirmed → Paid |
-| Finance lead, end of month | `GET /api/v1/reports/summary` — active subs, revenue, outstanding, overdue; SQL aggregates for sub-2s response |
-
-## 🛠️ Tech Stack
-
-- **FastAPI** (Python 3.10+) — REST API + OpenAPI docs + portal page
-- **SQLAlchemy 2.0** ORM — indexed for sub-2s queries at scale
-- **PostgreSQL** (production) / **SQLite** (zero-setup demo, default)
-- **JWT** auth + bcrypt password hashing (stdlib fallbacks included)
-- **pytest** for the test suite
-
-## 📁 Structure
-
-```
-app/
-├── main.py            # FastAPI app, startup/seed, portal route
-├── config.py          # env-driven settings (DATABASE_URL, SECRET_KEY)
-├── database.py        # engine, session, Base
-├── models.py          # ORM models (users, products, plans, subs, invoices…)
-├── schemas.py         # Pydantic request/response models
-├── security.py        # password policy, hashing, JWT (with fallbacks)
-├── deps.py            # auth + RBAC dependencies
-├── seed.py            # default admin + demo data
-├── routers/           # auth, catalog, subscriptions, billing, reports
-├── services/          # billing engine + reporting (SQL aggregates)
-└── templates/         # portal landing page
-tests/                 # security + API integration tests
-```
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Python 3.10+
-- (Optional) PostgreSQL. SQLite is used out of the box.
-
-### Setup
-```bash
-git clone https://github.com/vikassharma270907-alt/odoo-flux-hackathon.git
-cd odoo-flux-hackathon
-
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### Run
-```bash
-uvicorn app.main:app --reload
-```
-Then open:
-- Landing: http://127.0.0.1:8000/
-- **Dashboard / login:** http://127.0.0.1:8000/login
-- API explorer (Swagger): http://127.0.0.1:8000/docs
-- Health: http://127.0.0.1:8000/health
-
-### Web UI (server-rendered)
-- **/login** — cookie session sign-in
-- **/dashboard** (admin/staff) — finance summary stats, one-click "Run billing cycle", recent subscriptions
-- **/ui/subscriptions** — list + generate invoice per subscription
-- **/ui/invoices** — list with overdue flags, confirm + mark-paid actions; click an invoice number for a printable detail view
-- **/ui/invoices/{id}** — printable invoice (browser Print → Save as PDF), with line items, taxes, and discount
-- **Reset demo data** button (admin, on the dashboard) — rebuilds the seeded dataset for a clean demo
-- **/ui/discounts** (admin only) — list all discount rules with an active/inactive badge, plus a create form (type, value, scope, product, min purchase/qty, usage limit, date window)
-- **/portal** (customer) — the customer sees only their own subscriptions and invoices
-
-A demo dataset is seeded on first run so the dashboard shows real numbers immediately.
-
-**Logins:**
-- Admin — **admin@brightloop.io** / **Admin@1234**
-- Staff — **staff@brightloop.io** / **Staff@1234**
-- Customers — **customer@acme.com** / **Customer@123**, **finance@globex.com** / **Globex@123**, **ap@initech.com** / **Initech@123**
-
-**Seeded state** (what the finance dashboard shows on first load):
-- 3 active subscriptions (4 total; SUB-000001 is confirmed and not yet billed)
-- Revenue collected: ₹15,340 (2 paid invoices)
-- Outstanding: ₹15,930 (3 confirmed, unpaid invoices)
-- Overdue: 2 invoices (₹15,340) past their due date
-
-**Seeded discounts** (admin-created rules):
-- *Support 20% off* — active, scoped to the Priority Support add-on. Auto-applies to SUB-000004's next invoice: 500 → 400 net, so the invoice totals **₹472.00** instead of ₹590.
-- *Launch ₹100 off (expired)* — demonstrates the "stops when it expires" rule; it will not apply.
-- *Volume 10% (starts next month)* — demonstrates a future-dated rule; not yet active.
-
-Click **Run billing cycle** on the dashboard to generate the next due invoices live — the add-on discount applies automatically, and SUB-000001's unrelated invoice stays at ₹3,681.60.
-
-### Use PostgreSQL (optional)
-Set an environment variable (or `.env`):
-```
-DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/brightloop
-SECRET_KEY=replace-with-a-long-random-string
-```
-
-### Run tests
-```bash
-pytest -q
-```
-
-## 🔑 Quick API tour
+## Run it (one command)
 
 ```bash
-# log in as admin
-curl -X POST localhost:8000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@brightloop.io","password":"Admin@1234"}'
-
-# run the billing cycle (needs the Bearer token from login)
-curl -X POST localhost:8000/api/v1/billing/run -H "Authorization: Bearer <TOKEN>"
-
-# finance summary
-curl localhost:8000/api/v1/reports/summary -H "Authorization: Bearer <TOKEN>"
+cd brightloop-api
+docker compose up --build
 ```
 
-## ⚙️ Design notes
+This starts PostgreSQL, seeds it (1,500 customers, 5,000 subscriptions, ~12k invoices),
+and serves the API **and** the built web app together on <http://localhost:3000>.
 
-- **Idempotent billing** — a unique `(subscription_id, period_start)` constraint plus a `last_billed_date` cursor guarantee each period is billed exactly once, even if the billing run is triggered repeatedly.
-- **Performance** — foreign keys and status/date columns are indexed; list endpoints paginate; reports use SQL `SUM`/`COUNT` aggregates rather than Python loops.
-- **Security** — passwords hashed (bcrypt, PBKDF2 fallback), JWT auth, role-based route guards, schema validation on all input, no secrets in source.
-- **Dependency resilience** — `security.py` falls back to stdlib hashing/JWT if `passlib`/`jose` are unavailable; **SQLAlchemy is required** (`pip install -r requirements.txt`).
+API docs (OpenAPI): <http://localhost:3000/api/docs> · Health: <http://localhost:3000/api/health>
 
-## 📹 Submission
-- Repo: `https://github.com/vikassharma270907-alt/odoo-flux-hackathon`
-- Video walkthrough: *(add link)*
+### Local development
+
+```bash
+cd brightloop-api
+npm install
+npm run db:seed          # needs a PostgreSQL on DATABASE_URL (see .env.example)
+npm start                # API on :3000
+npm test                 # 20 unit tests
+
+cd frontend
+npm install
+npm run dev              # web app on :5173, proxies /api to :3000
+```
+
+### Demo logins
+
+| Role | Email | Password | Sees |
+|---|---|---|---|
+| **Admin** | `admin@brightloop.test` | `Admin@12345` | Everything, incl. catalogue + staff setup |
+| **Staff** | `staff@brightloop.test` | `Staff@12345` | Day-to-day: subscriptions, invoices, payments |
+| **Customer** | `customer@brightloop.test` | `Customer@123` | Portal: only their own subscriptions + invoices |
+
+The seed deliberately leaves periods due **today** unbilled, so **Run Billing** has real work on first use.
+
+---
+
+## What it does
+
+- **Accounts & roles** — one account per email (case-insensitive), strong-password rule, email reset link.
+  Three roles: admin, staff, customer. Only admin adds staff.
+- **Catalogue** — products with variants (e.g. Brand = Odoo adds ₹560), plans (daily/weekly/monthly/yearly
+  billing, min quantity, availability window, and per-plan flags: auto-close, early close, pause, renew),
+  taxes, quotation templates.
+- **Subscriptions** — created from a template or explicit lines; move through
+  Draft → Quotation → Confirmed → Active → Closed, with a snapshot unit price per line.
+- **Automatic recurring billing** — one invoice per subscription per period, taxes applied automatically,
+  **nothing billed twice or skipped**.
+- **Discounts** — fixed or percentage, thresholds, date window, usage limit, product- or subscription-scoped;
+  appear on the next invoice automatically and stop when expired or used up.
+- **Payments** — method, amount, date, note, against the right invoice; invoice flips to Paid when settled.
+- **Finance dashboard** — active subscriptions, revenue, outstanding, overdue, MRR; revenue chart;
+  overdue table; CSV export. Sub-2-second lists over thousands of rows.
+
+---
+
+## Architecture (3-tier)
+
+```mermaid
+flowchart LR
+  UI["React SPA (Vite + Tailwind)"] -->|"fetch /api, JWT in header"| API
+  subgraph API["Express API"]
+    direction TB
+    AU[authenticate] --> RB[requireRole] --> ZV[Zod validate] --> RT[thin routes]
+    RT --> SV["services (transactions, row locks)"]
+    SV --> DM["domain (pure rules + invoice maths)"]
+  end
+  RT --> DB[("PostgreSQL 16")]
+  SV --> DB
+  DB -. "views: v_dashboard_summary, v_mrr, v_overdue_invoices" .-> RT
+```
+
+Business logic stays in `src/domain` (pure, unit-tested) and `src/services` (transactional).
+Routes are thin. Input is validated by Zod; SQL is always parameterised.
+
+## Subscription lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Quotation
+  Quotation --> Confirmed
+  Confirmed --> Active
+  Active --> Paused: if plan allows pause
+  Paused --> Active: resume (skips paused periods)
+  Active --> Closed
+  Paused --> Closed
+  Closed --> [*]
+```
+
+## Invoice lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft
+  Draft --> Confirmed
+  Draft --> Cancelled
+  Confirmed --> Paid: payments cover the total
+  Confirmed --> Cancelled: only if nothing paid
+```
+
+Illegal transitions return **409**. Paid is reachable only by recording payments, never by a direct status set.
+
+## Billing day — why nothing is billed twice
+
+```mermaid
+sequenceDiagram
+  participant S as Staff
+  participant A as "POST /invoices/run-billing"
+  participant DB as PostgreSQL
+  S->>A: asOf (optional)
+  A->>DB: find due active subscriptions
+  loop each subscription (own transaction + FOR UPDATE row lock)
+    A->>DB: lines, taxes, live discounts
+    A->>DB: INSERT invoice ON CONFLICT (subscription_id, period_start) DO NOTHING
+    A->>DB: discount redemptions, used_count += 1, advance next_invoice_date
+  end
+  A-->>S: { due, invoicesCreated, periodsSkipped, failed }
+```
+
+The `UNIQUE (subscription_id, period_start)` constraint plus a per-subscription row lock make billing
+**idempotent**: run it twice and the second run creates zero invoices and reports the periods as skipped.
+Missed periods are caught up on the next run.
+
+---
+
+## Verification status
+
+Verified against a live PostgreSQL (not just syntax-checked):
+
+- ✅ 20/20 unit tests pass (`npm test`)
+- ✅ All three seed logins succeed; role scoping enforced (customer → 403 on staff routes)
+- ✅ Heavy lists over 5,000 subscriptions respond in ~20–40 ms (requirement: under 2 s)
+- ✅ **Billing idempotency**: first run created 429 invoices; second run created **0**
+- ✅ Admin create flows (product + Odoo +560 variant, plan + flag toggle, tax, discount, staff) all succeed
+- ✅ Payments list + filters, reset-password flow, revenue report (day & month) all work
+- ✅ Frontend builds clean and is served from the API origin
+
+---
+
+## Repository layout
+
+```
+brightloop-api/
+  db/            schema.sql, seed.js
+  src/
+    domain/      pure business rules + invoice maths (no DB)
+    services/    billing + lifecycle (transactions)
+    middleware/  auth, validate, errors
+    routes/      auth, users, catalog, subscriptions, invoices, payments, reports
+  test/          unit tests
+  frontend/      React + Vite + Tailwind app
+  docker-compose.yml  Dockerfile  .env.example
+```
+
+## Team
+
+| Role | Member |
+|---|---|
+| Team Leader — PM, portal, repo admin | @vikassharma270907-alt |
+| Frontend / architecture / presentation | @icametexploree |
+| Backend / logic / APIs | Ansh Shrivastav |
+| Fullstack / testing / video demo | @pramodsonihere |
