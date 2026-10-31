@@ -9,10 +9,17 @@ const { HttpError } = require('../domain/rules');
 const { wrap } = require('../middleware/errors');
 const { validate } = require('../middleware/validate');
 const { sign, authenticate } = require('../middleware/auth');
+const { rateLimit } = require('../middleware/rateLimit');
 const { withTx, audit } = require('../services/lifecycle');
 const { sendMail } = require('../mailer');
 
 const router = express.Router();
+
+// Throttle credential endpoints to blunt brute-force and email-bombing.
+// Keyed by IP+email so one attacker cannot lock out an entire shared IP, and a
+// single targeted account cannot be hammered from one source.
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, keyName: 'email' });
+const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, keyName: 'email' });
 const sha = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', 10); // equalises timing for unknown emails
 
@@ -30,7 +37,7 @@ router.post('/signup', validate(S.signup), wrap(async (req, res) => {
   res.status(201).json({ token: sign(out.user, out.customerId), user: out.user });
 }));
 
-router.post('/login', validate(S.login), wrap(async (req, res) => {
+router.post('/login', loginLimiter, validate(S.login), wrap(async (req, res) => {
   const { email, password } = req.valid.body;
   const { rows: [u] } = await pool.query(
     `SELECT u.id, u.name, u.email, u.role, u.password_hash, u.is_active, c.id AS customer_id
@@ -41,7 +48,7 @@ router.post('/login', validate(S.login), wrap(async (req, res) => {
 }));
 
 // Always answers 200 so the endpoint cannot be used to discover which emails are registered.
-router.post('/forgot-password', validate(S.forgot), wrap(async (req, res) => {
+router.post('/forgot-password', forgotLimiter, validate(S.forgot), wrap(async (req, res) => {
   const { email } = req.valid.body;
   const { rows: [u] } = await pool.query('SELECT id FROM users WHERE lower(email) = $1 AND is_active', [email]);
   if (u) {
