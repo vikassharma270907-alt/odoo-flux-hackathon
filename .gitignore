@@ -112,6 +112,8 @@ demo-video/brightloop-teaser.mp4
 demo-video/*.mov
 demo-video/*.mkv
 demo-video/*.webm
+# Generated thumbnail (regenerable from make_thumbnail.js)
+demo-video/thumbnail.png
 # Generated teaser script and rendered thumbnail exports (kept local, not in git).
 demo-video/make_teaser.ps1
 demo-video/thumbnails/*-1080p.png
