@@ -5,6 +5,10 @@ automatic recurring invoicing, discounts, payments and a finance dashboard.
 
 Built for the **Odoo x FLUX Lucknow Hackathon '26**. Problem statement: *Subscription Management System*.
 
+> **Live demo:** https://brightloop-do6a.onrender.com
+> Sign in as **admin@brightloop.test / Admin@12345** (or staff@brightloop.test / Staff@12345, customer@brightloop.test / Customer@123).
+> Hosted on Render's free tier, so the first request after idle may take ~30s to wake the instance.
+
 **Stack:** Node 20 · Express 4 · PostgreSQL 16 · Zod · JWT · React 18 · Vite · Tailwind · Recharts.
 Custom REST API over a real relational database. No static JSON, no BaaS — every form, status change
 and chart reads from or writes to PostgreSQL.
