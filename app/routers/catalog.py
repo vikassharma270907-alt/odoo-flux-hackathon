@@ -116,7 +116,7 @@ def list_plans(db: Session = Depends(get_db), _=Depends(require_staff)):
 def create_discount(payload: DiscountIn, db: Session = Depends(get_db), _=Depends(require_admin)):
     if payload.scope == "product" and payload.product_id is None:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            422,
             "product_id is required for product-scoped discounts",
         )
     discount = Discount(

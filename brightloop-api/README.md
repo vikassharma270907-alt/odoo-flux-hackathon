@@ -22,8 +22,7 @@ React 18 + Vite + Tailwind + React Router + Recharts. Docker serves the built ap
 cd frontend && npm install && npm run dev      # http://localhost:5173, proxies /api to :3000
 ```
 
-Built: sign-in, sign-up (live password checklist) and forgot-password; role-guarded routes; finance dashboard (KPIs, revenue chart, overdue table, CSV export, 30-second refresh); subscriptions (filters, create from template, lifecycle buttons that show only legal next states, renew); invoices (filters, Run Billing, confirm, cancel, send, print, record payment); customer portal; offline banner with cached reads.
-Still to build: reset-password page, admin screens (products with variants, plans, taxes, discounts, templates, staff), payments list.
+Screens: sign-in, sign-up (live password checklist), forgot-password and reset-password; role-guarded routes; finance dashboard (KPIs, revenue chart, overdue table, CSV export, 30-second refresh); subscriptions (filters, create from template, lifecycle buttons that show only legal next states, renew); invoices (filters, Run Billing, confirm, cancel, send, print, record payment); payments list; admin setup (products with variants, plans with flag toggles, taxes, discounts, templates, staff); customer portal; offline banner with cached reads.
 
 | Role | Login | Password |
 |---|---|---|

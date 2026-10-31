@@ -35,7 +35,7 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
 
     errors = validate_password_policy(payload.password)
     if errors:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, {"password": errors})
+        raise HTTPException(422, {"password": errors})
 
     user = User(
         email=payload.email,
@@ -74,7 +74,7 @@ def create_staff(
 
     errors = validate_password_policy(payload.password)
     if errors:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, {"password": errors})
+        raise HTTPException(422, {"password": errors})
 
     user = User(
         email=payload.email,
@@ -117,7 +117,7 @@ def confirm_password_reset(payload: PasswordResetConfirm, db: Session = Depends(
 
     errors = validate_password_policy(payload.new_password)
     if errors:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, {"password": errors})
+        raise HTTPException(422, {"password": errors})
 
     user.hashed_password = hash_password(payload.new_password)
     user.reset_token = None

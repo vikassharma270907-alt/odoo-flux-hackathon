@@ -90,7 +90,7 @@ def create_from_template(
     if not template:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
     if not template.plan_id:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Template has no plan")
+        raise HTTPException(422, "Template has no plan")
 
     sub = Subscription(
         number=_next_number(db),
