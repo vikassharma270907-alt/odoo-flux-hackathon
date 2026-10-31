@@ -23,7 +23,11 @@ services:
   - type: web
     name: brightloop
     runtime: docker
+    # The app lives in the brightloop-api/ subfolder. Render runs the Docker build
+    # from the repo root, so point both the Dockerfile and the build context there.
+    rootDir: brightloop-api
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     healthCheckPath: /api/health
     # Seed once on a fresh DB, then start the API (which also serves the built SPA).
