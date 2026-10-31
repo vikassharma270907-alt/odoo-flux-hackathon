@@ -7,7 +7,7 @@
   <tbody>
   {% for i in invoices %}
     <tr>
-      <td>{{ i.number }}</td>
+      <td><a href="/ui/invoices/{{ i.id }}">{{ i.number }}</a></td>
       <td>{{ i.customer_id }}</td>
       <td>
         <span class="badge b-{{ i.status.value }}">{{ i.status.value }}</span>

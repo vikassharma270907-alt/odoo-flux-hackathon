@@ -330,3 +330,65 @@ def ui_create_discount(
     db.add(discount)
     db.commit()
     return _redirect(f"/ui/discounts?message=Created+discount+{name.replace(' ', '+')}.")
+
+
+# --------------------------------------------------------------------------- #
+# Invoice detail / printable view
+# --------------------------------------------------------------------------- #
+@router.get("/ui/invoices/{invoice_id}", response_class=HTMLResponse)
+def ui_invoice_detail(
+    invoice_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
+):
+    if not user:
+        return _redirect("/login")
+
+    invoice = db.scalars(
+        select(Invoice)
+        .where(Invoice.id == invoice_id)
+        .options(selectinload(Invoice.lines))
+    ).first()
+    if not invoice:
+        return _redirect("/ui/invoices?message=Invoice+not+found.")
+
+    # Customers may only open their own invoices.
+    if user.role == Role.customer and invoice.customer_id != user.id:
+        return _redirect("/ui/invoices?message=Not+authorized.")
+
+    customer = db.get(User, invoice.customer_id)
+    sub = db.get(Subscription, invoice.subscription_id)
+    return templates.TemplateResponse(
+        request,
+        "invoice_detail.html",
+        {
+            "user": user,
+            "invoice": invoice,
+            "customer": customer,
+            "subscription_number": sub.number if sub else "—",
+        },
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Demo reset (admin only) — rebuild the seeded demo dataset
+# --------------------------------------------------------------------------- #
+@router.post("/ui/demo-reset")
+def ui_demo_reset(
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_current_user_optional),
+):
+    if not user or user.role != Role.admin:
+        return _redirect("/login")
+
+    # Deferred import avoids a circular import at module load.
+    from app.database import Base, engine
+    from app.seed import seed
+
+    # Drop and recreate all tables, then reseed. Safe here because this is an
+    # explicit, admin-triggered demo action on a demo database.
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+    seed(db)
+    return _redirect("/dashboard?message=Demo+data+reset.")

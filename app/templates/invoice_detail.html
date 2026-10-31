@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice {{ invoice.number }} · Brightloop</title>
+  <style>
+    :root { --purple:#714b67; --line:#e2e2e2; --muted:#888; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin:0;
+           background:#f4f2f5; color:#2b2b2b; }
+    .sheet { max-width:720px; margin:2rem auto; background:#fff; border:1px solid var(--line);
+             border-radius:10px; padding:2.4rem; }
+    .top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .brand { font-size:1.3rem; font-weight:700; color:var(--purple); }
+    .brand small { display:block; font-size:.75rem; color:var(--muted); font-weight:400; }
+    .inv-no { text-align:right; }
+    .inv-no h1 { margin:0; font-size:1.2rem; }
+    .badge { display:inline-block; padding:.15rem .6rem; border-radius:20px; font-size:.75rem; font-weight:600; }
+    .b-draft{background:#eee;color:#555;} .b-confirmed{background:#d6e4ff;color:#1b4fa0;}
+    .b-paid{background:#d3f0e0;color:#1a7f5a;} .b-cancelled{background:#eee;color:#888;}
+    .meta { display:flex; gap:3rem; margin:1.8rem 0; font-size:.88rem; }
+    .meta .label { color:var(--muted); font-size:.75rem; text-transform:uppercase; letter-spacing:.03em; }
+    table { width:100%; border-collapse:collapse; margin-top:1rem; font-size:.9rem; }
+    th,td { padding:.6rem .4rem; border-bottom:1px solid var(--line); text-align:left; }
+    th { color:var(--muted); font-size:.78rem; text-transform:uppercase; }
+    td.num,th.num { text-align:right; }
+    .totals { margin-top:1.2rem; margin-left:auto; width:260px; font-size:.9rem; }
+    .totals div { display:flex; justify-content:space-between; padding:.3rem 0; }
+    .totals .grand { border-top:2px solid var(--purple); margin-top:.3rem; padding-top:.5rem;
+                     font-weight:700; font-size:1.05rem; color:var(--purple); }
+    .actions { max-width:720px; margin:0 auto 2rem; display:flex; gap:.6rem; }
+    .btn { background:var(--purple); color:#fff; text-decoration:none; padding:.5rem 1rem;
+           border-radius:8px; border:none; cursor:pointer; font-size:.88rem; }
+    .btn.secondary { background:#fff; color:var(--purple); border:1px solid var(--purple); }
+    @media print { .actions, nav { display:none !important; } body { background:#fff; }
+                   .sheet { border:none; margin:0; } }
+  </style>
+</head>
+<body>
+  <div class="actions">
+    <a class="btn secondary" href="/ui/invoices">← Back</a>
+    <button class="btn" onclick="window.print()">Print / Save PDF</button>
+  </div>
+  <div class="sheet">
+    <div class="top">
+      <div class="brand">⟳ Brightloop Software<small>Subscription Management</small></div>
+      <div class="inv-no">
+        <h1>Invoice {{ invoice.number }}</h1>
+        <span class="badge b-{{ invoice.status.value }}">{{ invoice.status.value }}</span>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div>
+        <div class="label">Billed to</div>
+        <div>{{ customer.full_name or customer.email }}</div>
+        <div class="muted">{{ customer.email }}</div>
+      </div>
+      <div>
+        <div class="label">Issue date</div>
+        <div>{{ invoice.issue_date }}</div>
+      </div>
+      <div>
+        <div class="label">Due date</div>
+        <div>{{ invoice.due_date or '—' }}</div>
+      </div>
+      <div>
+        <div class="label">Subscription</div>
+        <div>{{ subscription_number }}</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Tax</th><th class="num">Line total</th></tr>
+      </thead>
+      <tbody>
+      {% for line in invoice.lines %}
+        <tr>
+          <td>{{ line.description }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">₹{{ "%.2f"|format(line.unit_price) }}</td>
+          <td class="num">{{ "%g"|format(line.tax_rate) }}%</td>
+          <td class="num">₹{{ "%.2f"|format(line.line_total) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div><span>Subtotal</span><span>₹{{ "%.2f"|format(invoice.subtotal) }}</span></div>
+      {% if invoice.discount_total and invoice.discount_total > 0 %}
+      <div><span>Discount</span><span>− ₹{{ "%.2f"|format(invoice.discount_total) }}</span></div>
+      {% endif %}
+      <div><span>Tax</span><span>₹{{ "%.2f"|format(invoice.tax_total) }}</span></div>
+      <div class="grand"><span>Total</span><span>₹{{ "%.2f"|format(invoice.total) }}</span></div>
+      <div><span>Paid</span><span>₹{{ "%.2f"|format(invoice.amount_paid) }}</span></div>
+    </div>
+  </div>
+</body>
+</html>
