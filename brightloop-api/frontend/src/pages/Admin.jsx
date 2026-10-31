@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, inr, useApi } from '../api.js';
-import { Badge, Btn, Card, ErrorBox, Field, Loading, Table, inputCls } from '../components/ui.jsx';
+import { Badge, Btn, Card, ErrorBox, Field, Hero, Loading, Table, inputCls } from '../components/ui.jsx';
 
 /* ------------------------------------------------------------------ */
 /* Small helpers                                                       */
@@ -363,7 +363,11 @@ export default function Admin() {
   const Pane = PANES[tab];
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-bold">Admin</h1>
+      <Hero
+        eyebrow="Brightloop Operations"
+        title="Admin"
+        description="Manage the catalog, plans, taxes, discounts, templates, and team members."
+      />
       <div className="flex flex-wrap gap-1 border-b border-slate-200">
         {TABS.map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)}

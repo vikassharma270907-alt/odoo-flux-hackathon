@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, inr, printInvoice, useApi } from '../api.js';
-import { Badge, Btn, Card, ErrorBox, Loading, Table } from '../components/ui.jsx';
+import { Badge, Btn, Card, ErrorBox, Hero, Loading, Table } from '../components/ui.jsx';
 
 export default function Portal() {
   const subs = useApi('/subscriptions?limit=50');
@@ -10,7 +10,11 @@ export default function Portal() {
   const post = (id, a, body) => act(() => api(`/subscriptions/${id}/${a}`, { method: 'POST', body }));
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-bold">My account</h1>
+      <Hero
+        eyebrow="Brightloop"
+        title="My account"
+        description="View your subscriptions, manage renewals, and download your invoices."
+      />
       <ErrorBox error={err || subs.error || invs.error} />
       <Card title="My subscriptions"><Loading loading={subs.loading && !subs.data} />
         <Table rows={subs.data?.data} empty="You have no subscriptions yet." columns={[
