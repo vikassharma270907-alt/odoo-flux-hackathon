@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, inr, printInvoice, qs, today, useApi } from '../api.js';
-import { Badge, Btn, Card, ErrorBox, Field, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
+import { Badge, Btn, Card, ErrorBox, Field, Hero, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
 
 function PayForm({ invoice, onDone }) {
   const [f, setF] = useState({ method: 'bank_transfer', amount: invoice.balance, paid_on: today(), note: '' });
@@ -38,7 +38,12 @@ export default function Invoices() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between"><h1 className="text-lg font-bold">Invoices</h1><Btn onClick={runBilling}>Run billing for today</Btn></div>
+      <Hero
+        eyebrow="Brightloop Operations"
+        title="Invoices"
+        description="Run billing cycles, record payments, and track outstanding balances."
+        actions={<Btn onClick={runBilling}>Run billing for today</Btn>}
+      />
       {run && (
         <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-xs text-emerald-900">
           {run.due} subscription(s) due · <b>{run.invoicesCreated}</b> invoice(s) created · {run.periodsSkipped} period(s) already billed

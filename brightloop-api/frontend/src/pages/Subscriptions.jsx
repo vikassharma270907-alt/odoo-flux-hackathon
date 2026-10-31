@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { api, inr, qs, today, useApi } from '../api.js';
-import { Badge, Btn, Card, ErrorBox, Field, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
+import { Badge, Btn, Card, ErrorBox, Field, Hero, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
 
 // Mirrors the server state machine so only legal moves are offered (the API still enforces it with a 409).
 export const NEXT = { draft: ['quotation'], quotation: ['confirmed'], confirmed: ['active'], active: ['paused', 'closed'], paused: ['active', 'closed'], closed: [] };
@@ -67,8 +67,12 @@ export default function Subscriptions() {
   const set = (k) => (e) => setFilters({ ...filters, [k]: e.target.value, page: 1 });
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between"><h1 className="text-lg font-bold">Subscriptions</h1>
-        <Btn onClick={() => setCreating(!creating)}>{creating ? 'Close form' : 'New subscription'}</Btn></div>
+      <Hero
+        eyebrow="Brightloop Operations"
+        title="Subscriptions"
+        description="Create, confirm, and manage the full lifecycle of recurring subscriptions."
+        actions={<Btn onClick={() => setCreating(!creating)}>{creating ? 'Close form' : 'New subscription'}</Btn>}
+      />
       {creating && <CreateForm onCreated={(id) => { setCreating(false); setOpenId(id); reload(); }} />}
       {openId && <Detail key={openId} id={openId} onChanged={reload} />}
       <Card>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getToken, inr, qs, useApi } from '../api.js';
-import { Btn, Card, ErrorBox, Field, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
+import { Btn, Card, ErrorBox, Field, Hero, Loading, Pager, Table, inputCls } from '../components/ui.jsx';
 
 const METHODS = ['cash', 'bank_transfer', 'card', 'upi', 'cheque'];
 
@@ -18,10 +18,12 @@ export default function Payments() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold">Payments</h1>
-        <Btn kind="ghost" onClick={downloadCsv}>Export CSV</Btn>
-      </div>
+      <Hero
+        eyebrow="Brightloop Operations"
+        title="Payments"
+        description="Review every payment received across methods and date ranges."
+        actions={<Btn kind="ghost" onClick={downloadCsv}>Export CSV</Btn>}
+      />
       <Card>
         <div className="flex flex-wrap items-end gap-2 mb-3">
           <Field label="Method">
