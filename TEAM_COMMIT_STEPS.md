@@ -34,7 +34,7 @@ git config user.email "the-email-verified-on-your-github@example.com"
 ```bash
 git pull --rebase origin main        # get everyone else's latest work first
 # ... make a real change in your area ...
-npm --prefix brightloop-api test     # keep the 35 unit/access tests green
+npm --prefix brightloop-api test     # keep the 35 unit/access tests green (+12 integration via test:integration = 47 total)
 git add <only the files you actually changed>
 git commit -m "feat(scope): what you did"    # imperative, scoped message
 git pull --rebase origin main        # re-sync in case someone pushed meanwhile

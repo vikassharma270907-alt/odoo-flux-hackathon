@@ -5,8 +5,8 @@ Every form, status change and chart reads from or writes to PostgreSQL. There ar
 
 **Verified end-to-end** against a live seeded database (1,500 customers / 5,000 subscriptions): billing is idempotent
 (a second run bills nothing twice), role scoping holds, and every heavy list page responds in **under 60 ms** — well
-inside the 2-second target. 35 unit + access-control tests via `npm test`, plus 11 DB-backed API
-integration tests (`node --test test/integration.test.js`) — 46 in total, all green.
+inside the 2-second target. 35 unit + access-control tests via `npm test`, plus 12 DB-backed API
+integration tests (`node --test test/integration.test.js`) — 47 in total, all green.
 
 ## Team & roles
 
@@ -33,7 +33,7 @@ API docs: <http://localhost:3000/api/docs>
 ## Tests
 
 ```bash
-npm test               # 20 unit tests: billing, discounts, state machines, password rules (no database needed)
+npm test               # 35 unit + access-control tests: billing, discounts, state machines, password rules, RBAC (no database needed)
 npm run test:integration   # real Express app + PostgreSQL: auth, role scoping, is_active revocation,
                            # rate limiting, billing idempotency, payments, discount expiry
 npm run test:all       # both suites
