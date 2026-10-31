@@ -138,6 +138,13 @@ test('run-billing creates invoices once; a second run creates none', { skip: ski
   assert.equal(inv.total, 2124);
 });
 
+// --- renewal (owner-scoped) ------------------------------------------------
+test('a customer can renew their own active subscription', { skip: skip() }, async () => {
+  const res = await request(app).post(`/api/subscriptions/${fixture.subscriptionId}/renew`).set(bearer(tokens.customer));
+  assert.equal(res.status, 200);
+  assert.equal(res.body.status, 'active'); // still active, expiry extended
+});
+
 // --- payments --------------------------------------------------------------
 test('partial then final payment moves an invoice to paid; overpayment is 409', { skip: skip() }, async () => {
   // Find the confirmed invoice for our fixture subscription.

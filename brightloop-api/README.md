@@ -136,6 +136,16 @@ See `/api/docs`. The main ones:
 `POST /invoices/run-billing`, `/invoices` (`confirm`, `cancel`, `send`, `print`), `/payments`,
 `/reports/summary|revenue|overdue|status-breakdown|export.csv`.
 
+## Deploy
+
+`render.yaml` is a one-click [Render](https://render.com) blueprint: a Docker web service plus a
+managed PostgreSQL database. Render builds the `Dockerfile`, injects `DATABASE_URL`, seeds the
+database once on first boot (`db/seed-if-empty.js` — redeploys keep the data), and serves both the
+API and the built SPA from a single public URL. Railway and Fly.io work the same way.
+
+> Not Vercel: this is a long-running Express server with a stateful PostgreSQL database, which
+> serverless platforms do not host well. The Docker image (`docker build .`) is the deploy unit.
+
 ## Security
 
 * **Immediate revocation:** every authenticated request re-checks `is_active`, so deactivating a user cuts off access at once (a single primary-key lookup, sub-millisecond).

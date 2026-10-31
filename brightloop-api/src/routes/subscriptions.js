@@ -109,6 +109,8 @@ router.post('/:id/transition', validate(S.transition), wrap(async (req, res) => 
   res.json(await transitionSubscription(pool, id, to, { userId: req.user.id }));
 }));
 
+// Renew is owner-scoped: staff can renew any subscription, a customer only their own.
+// loadOwned() enforces this (404 for other customers' records). The portal exposes a Renew button.
 router.post('/:id/renew', wrap(async (req, res) => {
   const id = Number(req.params.id);
   await loadOwned(req, id);
