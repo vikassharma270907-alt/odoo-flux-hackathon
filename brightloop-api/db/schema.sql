@@ -174,6 +174,9 @@ CREATE TABLE invoices (
   sent_at         TIMESTAMPTZ,
   paid_at         TIMESTAMPTZ,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- Idempotent billing: exactly one invoice per subscription per billing period.
+  -- Combined with the row lock in billSubscription(), a repeated Run Billing creates
+  -- zero duplicates because the ON CONFLICT path simply skips the already-billed period.
   -- "Nothing billed twice": one invoice per subscription per billing period
   CONSTRAINT invoices_period_uq UNIQUE (subscription_id, period_start),
   CHECK (amount_paid >= 0 AND amount_paid <= total)
