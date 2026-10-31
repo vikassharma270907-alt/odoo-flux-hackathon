@@ -80,7 +80,9 @@ Then open:
 - **/login** — cookie session sign-in
 - **/dashboard** (admin/staff) — finance summary stats, one-click "Run billing cycle", recent subscriptions
 - **/ui/subscriptions** — list + generate invoice per subscription
-- **/ui/invoices** — list with overdue flags, confirm + mark-paid actions
+- **/ui/invoices** — list with overdue flags, confirm + mark-paid actions; click an invoice number for a printable detail view
+- **/ui/invoices/{id}** — printable invoice (browser Print → Save as PDF), with line items, taxes, and discount
+- **Reset demo data** button (admin, on the dashboard) — rebuilds the seeded dataset for a clean demo
 - **/ui/discounts** (admin only) — list all discount rules with an active/inactive badge, plus a create form (type, value, scope, product, min purchase/qty, usage limit, date window)
 - **/portal** (customer) — the customer sees only their own subscriptions and invoices
 
