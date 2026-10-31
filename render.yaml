@@ -1,0 +1,47 @@
+# Render Blueprint (repo-root copy so Render's Blueprint flow auto-detects it).
+#
+# Render's "New -> Blueprint" scanner looks for render.yaml at the REPOSITORY ROOT.
+# The app itself lives in the brightloop-api/ subfolder, so every service below sets
+# `rootDir: brightloop-api` — paths (Dockerfile, build context) are then resolved
+# inside that subfolder. This mirrors brightloop-api/render.yaml; keep them in sync.
+#
+# Deploy: render.com -> New -> Blueprint -> pick this repo -> Apply.
+#   Render provisions the Postgres, builds the Dockerfile, injects DATABASE_URL,
+#   generates JWT_SECRET, seeds once on first boot (seed-if-empty), and serves the
+#   API + built SPA on a single URL. Redeploys keep the data.
+
+databases:
+  - name: brightloop-db
+    databaseName: subscriptions
+    plan: free           # free Postgres is fine for a demo; upgrade for the full 5k seed
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: brightloop
+    runtime: docker
+    rootDir: brightloop-api        # app + Dockerfile live here
+    dockerfilePath: ./Dockerfile   # relative to rootDir
+    dockerContext: .               # build context = brightloop-api/
+    plan: free
+    healthCheckPath: /api/health
+    # Start command is the Dockerfile CMD (seed-if-empty then start), which runs in the
+    # image's /app WORKDIR. No dockerCommand override, to avoid a wrong-cwd exit-127.
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: brightloop-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true        # Render generates a strong secret
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      # Keep the seed light on the free tier; raise for a fuller demo.
+      - key: SEED_CUSTOMERS
+        value: "300"
+      - key: SEED_SUBS
+        value: "800"
