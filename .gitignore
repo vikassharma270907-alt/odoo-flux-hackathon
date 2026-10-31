@@ -102,3 +102,11 @@ demo-video/scene*.mp3
 demo-video/test_voice.mp3
 demo-video/*.log
 demo-video/node_modules/
+# Large rendered video exports: host these on YouTube (see YOUTUBE_PUBLISH.md), not in git.
+# Keeps clones small; multi-MB binaries bloat history permanently.
+demo-video/*-1080p.mp4
+demo-video/*-youtube*.mp4
+demo-video/brightloop-demo-video.mp4
+demo-video/*.mov
+demo-video/*.mkv
+demo-video/*.webm
