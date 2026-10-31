@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>Brightloop Thumbnail 1 - The Signature Moment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #090b14;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 56px 64px 44px 64px;
+  }
+
+  /* Atmospheric Background Glows */
+  .glow-purple {
+    position: absolute;
+    width: 650px;
+    height: 650px;
+    top: -150px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(142, 68, 173, 0.35) 0%, rgba(113, 75, 103, 0.15) 50%, transparent 70%);
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-teal {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    bottom: -150px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(1, 126, 132, 0.45) 0%, rgba(6, 182, 212, 0.2) 50%, transparent 70%);
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+
+  /* Content Containers */
+  .header, .main, .footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header Bar */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-mark {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #a855f7 0%, #06b6d4 100%);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(168, 85, 247, 0.45);
+  }
+  .brand-name {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+  .hackathon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    padding: 10px 20px;
+    border-radius: 999px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
+  }
+  .hackathon-badge .star {
+    color: #fbbf24;
+    font-size: 16px;
+  }
+  .hackathon-badge span {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fef08a;
+  }
+
+  /* Main Split */
+  .main {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 36px;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  /* Left Hook */
+  .hook-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .tagline-eyebrow {
+    font-size: 15px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #22d3ee;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .tagline-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22d3ee;
+    box-shadow: 0 0 12px #22d3ee;
+  }
+  .headline {
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+  .headline .highlight {
+    background: linear-gradient(135deg, #38bdf8 0%, #34d399 50%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 4px 24px rgba(52, 211, 153, 0.3));
+  }
+  .sub-headline {
+    font-size: 21px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #cbd5e1;
+    max-width: 580px;
+    margin-bottom: 24px;
+  }
+  .sub-headline strong {
+    color: #ffffff;
+    font-weight: 800;
+  }
+
+  /* Floating Metric Chips */
+  .meta-chips {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .meta-chip.green {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: rgba(6, 78, 59, 0.35);
+    color: #6ee7b7;
+  }
+  .meta-chip.purple {
+    border-color: rgba(168, 85, 247, 0.4);
+    background: rgba(88, 28, 135, 0.35);
+    color: #d8b4fe;
+  }
+
+  /* Right Visual: Idempotency Signature Moment Showcase */
+  .visual-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(6, 182, 212, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transform: perspective(1000px) rotateY(-4deg) rotateX(2deg);
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .run-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-pill-live {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  /* Two Run Comparison */
+  .runs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .run-box {
+    background: rgba(2, 6, 23, 0.6);
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .run-box.first {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: linear-gradient(180deg, rgba(6, 78, 59, 0.25) 0%, rgba(2, 6, 23, 0.6) 100%);
+  }
+  .run-box.second {
+    border-color: rgba(251, 191, 36, 0.4);
+    background: linear-gradient(180deg, rgba(120, 53, 15, 0.25) 0%, rgba(2, 6, 23, 0.6) 100%);
+  }
+  .run-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    margin-bottom: 4px;
+  }
+  .run-number {
+    font-size: 42px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .run-box.first .run-number {
+    color: #34d399;
+  }
+  .run-box.second .run-number {
+    color: #fbbf24;
+  }
+  .run-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  /* SQL Code Banner */
+  .sql-box {
+    background: #020617;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #93c5fd;
+    line-height: 1.4;
+  }
+  .sql-box .kw { color: #f472b6; font-weight: 700; }
+  .sql-box .fn { color: #34d399; font-weight: 700; }
+
+  /* Footer Tech Stack */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tech-pills {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pill {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  .pill.highlight {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3);
+    background: rgba(56, 189, 248, 0.1);
+  }
+  .right-tag {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    padding-right: 180px; /* Leave bottom right clear for YouTube timestamp! */
+  }
+</style>
+</head>
+<body>
+  <div class="glow-purple"></div>
+  <div class="glow-teal"></div>
+  <div class="grid-pattern"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand-group">
+      <div class="logo-mark">B</div>
+      <div class="brand-name">Brightloop</div>
+    </div>
+    <div class="hackathon-badge">
+      <span class="star">★</span>
+      <span>Odoo × FLUX Hackathon '26</span>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main class="main">
+    <div class="hook-container">
+      <div class="tagline-eyebrow">Database-Guaranteed Billing</div>
+      <h1 class="headline">
+        NEVER BILLED<br>
+        <span class="highlight">TWICE. EVER.</span>
+      </h1>
+      <p class="sub-headline">
+        Automated recurring billing engine with <strong>PostgreSQL idempotency</strong>, dynamic product variants &amp; executive dashboard.
+      </p>
+      <div class="meta-chips">
+        <div class="meta-chip green">
+          <span>✓</span> 47/47 Tests Passing
+        </div>
+        <div class="meta-chip purple">
+          <span>⚡</span> Real-time SQL Views
+        </div>
+        <div class="meta-chip">
+          <span>🛡️</span> Zero BaaS / 100% Postgres
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Showcase -->
+    <div class="visual-card">
+      <div class="card-top">
+        <span class="run-badge">POST /invoices/run-billing</span>
+        <span class="status-pill-live">200 OK</span>
+      </div>
+
+      <div class="runs-grid">
+        <div class="run-box first">
+          <div class="run-title">1st Run Today</div>
+          <div class="run-number">429</div>
+          <div class="run-sub">Invoices Created<br>+ Disct &amp; Tax Applied</div>
+        </div>
+        <div class="run-box second">
+          <div class="run-title">2nd Run Today</div>
+          <div class="run-number">0</div>
+          <div class="run-sub">Skipped Cleanly<br>Zero Duplicates</div>
+        </div>
+      </div>
+
+      <div class="sql-box">
+        <span class="kw">INSERT INTO</span> invoices (...)<br>
+        <span class="kw">ON CONFLICT</span> (sub_id, period)<br>
+        <span class="fn">DO NOTHING</span>;
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="tech-pills">
+      <span class="pill highlight">Node 20</span>
+      <span class="pill highlight">PostgreSQL 16</span>
+      <span class="pill highlight">React 18</span>
+      <span class="pill">Vite</span>
+      <span class="pill">Tailwind</span>
+      <span class="pill">Docker</span>
+    </div>
+    <div class="right-tag">
+      Live Demo Deployed on Render
+    </div>
+  </footer>
+</body>
+</html>

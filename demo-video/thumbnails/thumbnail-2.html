@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>Brightloop Thumbnail 2 - Enterprise SaaS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #0b0c16;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 54px 64px 44px 64px;
+  }
+
+  /* Vibrant Mesh Gradients */
+  .glow-1 {
+    position: absolute;
+    width: 750px;
+    height: 750px;
+    top: -200px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(113, 75, 103, 0.4) 0%, rgba(168, 85, 247, 0.15) 50%, transparent 70%);
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-2 {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    bottom: -180px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.35) 0%, rgba(1, 126, 132, 0.15) 50%, transparent 70%);
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 32px 32px;
+    z-index: 0;
+  }
+
+  .header, .main, .footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #714B67 0%, #017E84 100%);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(113, 75, 103, 0.5);
+  }
+  .logo-text {
+    font-size: 34px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .hackathon-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 22px;
+    border-radius: 999px;
+    backdrop-filter: blur(14px);
+  }
+  .trophy { font-size: 18px; }
+  .hackathon-pill span {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #e2e8f0;
+  }
+
+  /* Main */
+  .main {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .headline-box {
+    display: flex;
+    flex-direction: column;
+  }
+  .badge-tag {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #38bdf8;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge-tag span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 10px #38bdf8;
+  }
+  .title-main {
+    font-size: 66px;
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+  .title-gradient {
+    background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #4ade80 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .desc {
+    font-size: 20px;
+    font-weight: 600;
+    color: #94a3b8;
+    line-height: 1.45;
+    margin-bottom: 24px;
+    max-width: 560px;
+  }
+  .desc b {
+    color: #ffffff;
+  }
+
+  /* State flow pills */
+  .state-flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .flow-item {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+  }
+  .flow-item.active {
+    background: rgba(52, 211, 153, 0.2);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #34d399;
+  }
+  .flow-arrow {
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  /* Right Dashboard Card */
+  .dashboard-mockup {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 50px rgba(168, 85, 247, 0.15);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .dash-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .dots {
+    display: flex;
+    gap: 6px;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ef4444; }
+  .dot.y { background: #f59e0b; }
+  .dot.g { background: #10b981; }
+
+  .dash-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  /* KPI Grid */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .kpi-card {
+    background: rgba(2, 6, 23, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .kpi-card .lbl {
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .kpi-card .val {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .val.green { color: #34d399; }
+  .val.purple { color: #c084fc; }
+
+  /* Chart bars */
+  .chart-area {
+    background: rgba(2, 6, 23, 0.4);
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+  .bars-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 70px;
+    padding-top: 6px;
+  }
+  .bar-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .bar-fill {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  }
+  .bar-col:nth-child(5) .bar-fill,
+  .bar-col:nth-child(6) .bar-fill,
+  .bar-col:nth-child(7) .bar-fill {
+    background: linear-gradient(180deg, #c084fc 0%, #9333ea 100%);
+  }
+  .bar-lbl {
+    font-size: 10px;
+    color: #64748b;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .badge-group {
+    display: flex;
+    gap: 10px;
+  }
+  .badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  .badge.render {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+  }
+  .footer-sub {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 700;
+    padding-right: 180px; /* YouTube timestamp safe zone */
+  }
+</style>
+</head>
+<body>
+  <div class="glow-1"></div>
+  <div class="glow-2"></div>
+  <div class="grid-overlay"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-block">
+      <div class="logo-icon">B</div>
+      <div class="logo-text">Brightloop</div>
+    </div>
+    <div class="hackathon-pill">
+      <span class="trophy">🏆</span>
+      <span>Odoo × FLUX Hackathon '26</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="headline-box">
+      <div class="badge-tag">
+        <span></span>
+        Full-Lifecycle Architecture
+      </div>
+      <h1 class="title-main">
+        SUBSCRIPTION<br>
+        <span class="title-gradient">MANAGEMENT.</span>
+      </h1>
+      <p class="desc">
+        Complete business platform: <b>Quotation to active</b>, automated discounts, payments &amp; <b>finance dashboard</b> at scale.
+      </p>
+      <div class="state-flow">
+        <span class="flow-item">Quotation</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item">Confirmed</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item active">Active</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-item active">Paid</span>
+      </div>
+    </div>
+
+    <!-- Dashboard Visual -->
+    <div class="dashboard-mockup">
+      <div class="dash-nav">
+        <div class="dots">
+          <span class="dot r"></span>
+          <span class="dot y"></span>
+          <span class="dot g"></span>
+        </div>
+        <span class="dash-url">brightloop-do6a.onrender.com</span>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="lbl">Active Subs</div>
+          <div class="val">4,871</div>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">MRR</div>
+          <div class="val purple">₹38L</div>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-header">
+          <span>Revenue Growth (Monthly)</span>
+          <span style="color:#34d399">Total: ₹212 Lakh</span>
+        </div>
+        <div class="bars-container">
+          <div class="bar-col"><div class="bar-fill" style="height:40%"></div><span class="bar-lbl">Apr</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:55%"></div><span class="bar-lbl">May</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:48%"></div><span class="bar-lbl">Jun</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:70%"></div><span class="bar-lbl">Jul</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:65%"></div><span class="bar-lbl">Aug</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:85%"></div><span class="bar-lbl">Sep</span></div>
+          <div class="bar-col"><div class="bar-fill" style="height:100%"></div><span class="bar-lbl">Oct</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="badge-group">
+      <span class="badge">Node.js 20</span>
+      <span class="badge">PostgreSQL 16</span>
+      <span class="badge">React 18</span>
+      <span class="badge render">● 47 Passing Tests</span>
+    </div>
+    <div class="footer-sub">
+      Live Demo Walkthrough
+    </div>
+  </footer>
+</body>
+</html>

@@ -525,7 +525,11 @@
   const scenes = Array.from(document.querySelectorAll('.scene'));
   const titles = ["Title","The problem","Architecture","Admin · catalogue","Lifecycle",
     "Run Billing","Payments","Validation & RBAC","Dashboard","Live walkthrough","Verification","Close"];
-  const durations = scenes.map(s => parseInt(s.dataset.dur,10)); // seconds
+  // Optional timing override for automated rendering:  ?dur=26,32,34,...  (one per scene, seconds)
+  const durParam = new URLSearchParams(location.search).get('dur');
+  const durOverride = durParam ? durParam.split(',').map(Number).filter(n=>!isNaN(n)) : null;
+  const durations = scenes.map((s,idx) =>
+    (durOverride && durOverride[idx] ? durOverride[idx] : parseInt(s.dataset.dur,10))); // seconds
   const total = durations.reduce((a,b)=>a+b,0);
   let i = 0, elapsedInScene = 0, playing = true, lastTs = null, lifecycleTimers = [];
 

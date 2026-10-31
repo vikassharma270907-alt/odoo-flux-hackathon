@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>Brightloop Thumbnail 3 - High Scale & Speed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    background: #080911;
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 52px 64px 44px 64px;
+  }
+
+  /* Extreme High-Energy Gradients */
+  .glow-cyan {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    top: -160px;
+    left: -120px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.45) 0%, rgba(14, 165, 233, 0.15) 50%, transparent 70%);
+    filter: blur(95px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .glow-purple {
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    bottom: -150px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(113, 75, 103, 0.2) 50%, transparent 70%);
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    z-index: 0;
+  }
+
+  .header, .main, .footer {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-square {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.45);
+  }
+  .brand-title {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .pill-award {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    padding: 10px 22px;
+    border-radius: 999px;
+    backdrop-filter: blur(14px);
+  }
+  .pill-award .star { color: #fbbf24; font-size: 16px; }
+  .pill-award span {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fef08a;
+  }
+
+  /* Main */
+  .main {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 36px;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+  }
+  .speed-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 800;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 6px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin-bottom: 14px;
+  }
+  .hero-headline {
+    font-size: 68px;
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    margin-bottom: 16px;
+  }
+  .hero-headline .neon {
+    background: linear-gradient(135deg, #22d3ee 0%, #34d399 50%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 21px;
+    font-weight: 600;
+    color: #cbd5e1;
+    line-height: 1.45;
+    margin-bottom: 24px;
+    max-width: 580px;
+  }
+  .hero-sub b {
+    color: #ffffff;
+  }
+
+  .stats-strip {
+    display: flex;
+    gap: 14px;
+  }
+  .stat-pill {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  .stat-pill .p-lbl {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .stat-pill .p-val {
+    font-size: 20px;
+    font-weight: 900;
+    color: #38bdf8;
+  }
+  .stat-pill .p-val.green { color: #34d399; }
+
+  /* Right Visual: Scale & Speed Glass Panel */
+  .scale-panel {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(6, 182, 212, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+  }
+  .latency-indicator {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 800;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.15);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .huge-metric {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    background: rgba(2, 6, 23, 0.5);
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .metric-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  .metric-big {
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: #38bdf8;
+  }
+
+  .feature-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .feature-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(2, 6, 23, 0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .feature-row .f-name { color: #e2e8f0; }
+  .feature-row .f-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+  }
+  .feature-row .f-badge.green {
+    background: rgba(52, 211, 153, 0.2);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.3);
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pill-row {
+    display: flex;
+    gap: 10px;
+  }
+  .tech-item {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  .tech-item.accent {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
+  }
+  .footer-caption {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    padding-right: 180px; /* Safe zone for YouTube timestamp */
+  }
+</style>
+</head>
+<body>
+  <div class="glow-cyan"></div>
+  <div class="glow-purple"></div>
+  <div class="grid-lines"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="brand-group">
+      <div class="logo-square">B</div>
+      <div class="brand-title">Brightloop</div>
+    </div>
+    <div class="pill-award">
+      <span class="star">★</span>
+      <span>Odoo × FLUX Hackathon '26</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="hero-content">
+      <div class="speed-tag">⚡ BENCHMARK: SUB-40MS QUERIES</div>
+      <h1 class="hero-headline">
+        5,000 SUBS.<br>
+        <span class="neon">REAL POSTGRES.</span>
+      </h1>
+      <p class="hero-sub">
+        No static mockups. No BaaS shortcuts. <b>Every metric, invoice &amp; state change</b> runs on PostgreSQL 16 relational views.
+      </p>
+      <div class="stats-strip">
+        <div class="stat-pill">
+          <span class="p-lbl">Test Coverage</span>
+          <span class="p-val green">47 Passing</span>
+        </div>
+        <div class="stat-pill">
+          <span class="p-lbl">MRR Aggregation</span>
+          <span class="p-val">₹38,00,000</span>
+        </div>
+        <div class="stat-pill">
+          <span class="p-lbl">Requirement</span>
+          <span class="p-val green">&lt; 2s (Beat: 28ms)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="scale-panel">
+      <div class="panel-header">
+        <span class="panel-title">PostgreSQL Performance</span>
+        <span class="latency-indicator">28ms Latency</span>
+      </div>
+
+      <div class="huge-metric">
+        <div class="metric-label">Active Seeded<br>Subscriptions</div>
+        <div class="metric-big">5,000+</div>
+      </div>
+
+      <div class="feature-rows">
+        <div class="feature-row">
+          <span class="f-name">Idempotent Run Billing</span>
+          <span class="f-badge green">0 Duplicates</span>
+        </div>
+        <div class="feature-row">
+          <span class="f-name">Product Variant Surcharge</span>
+          <span class="f-badge">+₹560 Odoo</span>
+        </div>
+        <div class="feature-row">
+          <span class="f-name">State Machine Guards</span>
+          <span class="f-badge green">409 Enforced</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="pill-row">
+      <span class="tech-item accent">Node 20</span>
+      <span class="tech-item accent">PostgreSQL 16</span>
+      <span class="tech-item">React 18</span>
+      <span class="tech-item">Render Hosted</span>
+    </div>
+    <div class="footer-caption">
+      Complete Hackathon Demo
+    </div>
+  </footer>
+</body>
+</html>

@@ -75,10 +75,18 @@ async def synth(scenes, force=False):
 
 
 def assemble(scenes):
+    # Prefer aligned windows from timing.json (written by plan_timing.py) so the
+    # voiceover starts each scene exactly when the rendered deck advances.
+    timing_path = os.path.join(HERE, "timing.json")
+    windows = None
+    if os.path.exists(timing_path):
+        with open(timing_path, encoding="utf-8") as f:
+            windows = json.load(f)["durations"]
+
     starts, acc = [], 0.0
-    for s in scenes:
+    for idx, s in enumerate(scenes):
         starts.append(acc)
-        acc += s["dur"]
+        acc += (windows[idx] if windows else s["dur"])
     total = acc
 
     inputs, filters = [], []
@@ -105,10 +113,11 @@ def assemble(scenes):
     print(f"\n  Assembled voiceover: {out}  ({total:.0f}s target)")
 
     print("\n  Per-scene fit (narration vs scene window):")
-    for s in scenes:
+    for idx, s in enumerate(scenes):
         d = duration(scene_path(s["scene"]))
-        flag = "ok " if d <= s["dur"] else "OVER"
-        print(f"    scene {s['scene']:>2}: {d:6.1f}s  /  {s['dur']:>3}s   {flag}")
+        win = windows[idx] if windows else s["dur"]
+        flag = "ok " if d <= win else "OVER"
+        print(f"    scene {s['scene']:>2}: {d:6.1f}s  /  {win:>3}s   {flag}")
     return out, total
 
 
