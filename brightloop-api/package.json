@@ -9,7 +9,8 @@
     "db:seed": "node db/seed.js --reset",
     "test": "node --test test/rules.test.js test/billing.test.js test/billing.guards.test.js test/invoiceCalc.test.js test/util.test.js test/access.test.js",
     "test:integration": "node --test test/integration.test.js",
-    "test:all": "npm test && npm run test:integration"
+    "test:all": "npm test && npm run test:integration",
+    "setup-hooks": "git -C .. config core.hooksPath .githooks"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

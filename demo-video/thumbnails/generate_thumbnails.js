@@ -67,3 +67,4 @@ renderThumbnails().catch(err => {
   console.error('Error generating thumbnails:', err);
   process.exit(1);
 });
+

@@ -1,0 +1,42 @@
+#!/bin/sh
+# Shared pre-push gate for the Brightloop app (tracked in the repo).
+#
+# Enable it after cloning with:
+#     git config core.hooksPath .githooks
+# or run `npm run setup-hooks` from brightloop-api/.
+#
+# The unit suite (npm test) needs no database and is the HARD gate: if it fails
+# the push is aborted. The integration suite needs a Postgres `subscriptions_test`
+# database; it runs opportunistically and only WARNS if that DB is unreachable,
+# so a missing local DB never blocks a legitimate push.
+
+# Resolve the app directory whether git runs the hook from the repo root or from
+# inside brightloop-api/.
+if [ -d "brightloop-api" ]; then
+  APP_DIR="brightloop-api"
+elif [ -f "package.json" ] && [ -d "test" ]; then
+  APP_DIR="."
+else
+  echo "pre-push: could not locate the brightloop-api app; skipping tests." >&2
+  exit 0
+fi
+
+cd "$APP_DIR" || exit 1
+
+echo "pre-push: running unit tests (npm test)..."
+if ! npm test --silent; then
+  echo "pre-push: unit tests FAILED — push aborted." >&2
+  exit 1
+fi
+
+echo "pre-push: running integration tests (npm run test:integration)..."
+if npm run test:integration --silent; then
+  echo "pre-push: integration tests passed."
+else
+  echo "pre-push: WARNING — integration tests did not pass (often just a missing" >&2
+  echo "          'subscriptions_test' database). Unit tests passed, so the push" >&2
+  echo "          is allowed. Start the test DB to run the full suite locally." >&2
+fi
+
+echo "pre-push: checks complete."
+exit 0

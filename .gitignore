@@ -107,6 +107,7 @@ demo-video/node_modules/
 demo-video/*-1080p.mp4
 demo-video/*-youtube*.mp4
 demo-video/brightloop-demo-video.mp4
+demo-video/brightloop-demo.mp4
 demo-video/*.mov
 demo-video/*.mkv
 demo-video/*.webm
