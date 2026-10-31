@@ -3,8 +3,11 @@
 **Rule from Odoo:** show the **product, not the code**. Reviewers already have repo access.
 Don't scroll source files. Use the pre-seeded demo logins — don't waste time typing signup forms.
 
+**Where to demo**
+- **Live app:** https://brightloop-do6a.onrender.com (hosted on Render, real PostgreSQL). On the free tier the first request after idle takes ~30s to wake — **open it a minute before recording** so it's warm.
+- **Local fallback (recommended for the recording):** `docker compose up --build` in `brightloop-api/` serves the same app on http://localhost:3000 with the full 5,000-subscription seed and no cold-start lag. Use this for a snappier demo, and *mention* the live URL as proof it's deployed.
+
 **Before you hit record**
-- Run `docker compose up --build` (or the local server) so the app serves on a clean, seeded DB.
 - Open two browser windows side by side (you'll switch roles live).
 - Have the three logins ready: admin / staff / customer (see table at the bottom).
 - Set screen recording to 1080p. Keep the mouse calm and deliberate.
@@ -41,12 +44,13 @@ Don't scroll source files. Use the pre-seeded demo logins — don't waste time t
 - **Sign out, log in as the customer.** Show the portal: only *their own* subscriptions and invoices, no admin/staff navigation. Reinforce role-based access control.
 
 ### 5:15 – 6:00 · Finance dashboard + scale + resilience
-- Back as **staff/admin → Dashboard**: KPI cards (active subscriptions, revenue, outstanding, overdue, MRR), the revenue-by-month chart, the overdue table, CSV export. Mention this is over **5,000 seeded subscriptions** and every page loads in well under 2 seconds.
+- Back as **staff/admin → Dashboard**: KPI cards (active subscriptions, revenue, outstanding, overdue, MRR), the revenue-by-month chart, the overdue table, CSV export. On the local Docker run this is over **5,000 seeded subscriptions** and every page loads in well under 2 seconds.
 - Briefly show **/api/docs** (OpenAPI) to prove a real REST API.
+- Mention it is **also deployed live** on Render with its own managed PostgreSQL — one public URL, same codebase.
 - Optional: toggle network offline to show the **offline banner** serving cached data.
 
 ### 6:00 – 6:30 · Close
-- One line: custom relational backend, real dynamic data, enforced state machines, idempotent billing, role-based access, and a finance dashboard — all verified end to end (35 passing tests).
+- One line: custom relational backend, real dynamic data, enforced state machines, idempotent billing, role-based access, and a finance dashboard — all verified end to end (47 passing tests) and deployed live.
 
 ---
 
@@ -64,10 +68,22 @@ Don't scroll source files. Use the pre-seeded demo logins — don't waste time t
 - Don't claim features that aren't wired to the database.
 - Don't rush the "Run Billing twice" moment — it's your strongest point.
 
-## Submission checklist (5:00–6:00 PM window)
-- [ ] Final commit pushed to the single `main` branch before 5:00 PM.
-- [ ] Commits balanced across all four teammates (real commits from each account).
-- [ ] Mentor/evaluator added as a collaborator on the repo.
-- [ ] Video 5–7 min, product-focused, uploaded with public ("anyone with the link") permissions.
-- [ ] Link permissions verified in an incognito window.
-- [ ] Video link pasted into the portal via "Submit Video Solution" before 6:00 PM.
+## Final submission checklist
+
+**Already done ✅**
+- [x] App builds and runs via one command (`docker compose up --build`), verified from a cold DB.
+- [x] Custom backend + real PostgreSQL, no static JSON / BaaS.
+- [x] 47 automated tests passing; all P0 requirements verified end to end.
+- [x] README with setup, demo logins, architecture + state diagrams, and the live URL.
+- [x] Deployed live on Render: https://brightloop-do6a.onrender.com
+- [x] Code pushed to the single `main` branch.
+
+**Still to do before the deadline ⬜**
+- [ ] **Confirm with your mentor that the pre-built starter is allowed** (rules check — do this first).
+- [ ] **Balanced commits from all four teammates** — each pushes real commits from their own GitHub account to `main` (see `TEAM_COMMIT_STEPS.md`). This is a top scoring criterion.
+- [ ] **Add the assigned evaluator/mentor as a collaborator** on the GitHub repo (Settings → Collaborators).
+- [ ] Record the 5–7 min product video (use this script). Warm up the live URL first, or demo on local Docker.
+- [ ] Upload the video (YouTube unlisted / Drive / Loom) with **"anyone with the link can view"**.
+- [ ] **Verify the video link in an incognito window** before submitting.
+- [ ] Final push to `main` before the 5:00 PM code freeze.
+- [ ] Paste the video link into the portal via **"Submit Video Solution"** before the deadline.
