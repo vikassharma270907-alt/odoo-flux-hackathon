@@ -1,7 +1,23 @@
-# Brightloop Subscription Management System: API
+# Brightloop Subscription Management System
 
-Plans, subscriptions, recurring billing, payments and revenue reporting on **Node + Express + PostgreSQL**.
-Everything is read from and written to the database. There are no static JSON files and no BaaS.
+Plans, subscriptions, recurring billing, payments and revenue reporting on **Node 20 · Express · PostgreSQL 16 · React 18 + Vite + Tailwind**.
+Every form, status change and chart reads from or writes to PostgreSQL. There are no static JSON files and no BaaS.
+
+**Verified end-to-end** against a live seeded database (1,500 customers / 5,000 subscriptions): billing is idempotent
+(a second run bills nothing twice), role scoping holds, and every heavy list page responds in **under 60 ms** — well
+inside the 2-second target. 35 unit + access-control tests via `npm test`, plus 11 DB-backed API
+integration tests (`node --test test/integration.test.js`) — 46 in total, all green.
+
+## Team & roles
+
+Built for the Odoo x FLUX Lucknow Hackathon '26. Four contributors, one `main` branch:
+
+| Member | GitHub | Focus |
+| --- | --- | --- |
+| Vikas Sharma (lead) | `vikassharma270907-alt` | Design system, finance dashboard, admin screens, docs, release |
+| — | `icametexploree` | Frontend architecture, auth + subscription + invoice + portal pages |
+| Ansh Shrivastav | — | Database schema, domain logic, billing engine, lifecycle services, routes |
+| — | `pramodsonihere` | Auth & security hardening, seed script, unit + API integration tests |
 
 ## Run it
 

@@ -1,2 +1,16 @@
-node_modules
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Env / secrets
 .env
+.env.*
+!.env.example
+
+# Build output (the API serves frontend/dist at runtime; rebuild with `npm run build`)
+frontend/dist/
+
+# Logs & OS
+npm-debug.log*
+.DS_Store
+Thumbs.db
