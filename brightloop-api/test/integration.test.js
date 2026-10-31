@@ -174,3 +174,60 @@ test('partial then final payment moves an invoice to paid; overpayment is 409', 
   const after = await request(app).post('/api/payments').set(bearer(tokens.staff)).send({ invoice_id: invoice.id, method: 'cash', amount: 1 });
   assert.equal(after.status, 409);
 });
+
+// --- early-close guard (off-by-one on the expiry day) ----------------------
+// A plan with allow_early_close = FALSE must not be closable on or before its expiry date.
+// The guard previously used a strict '>' comparison, which let a customer close such a plan
+// exactly ON the expiry day. It now uses '>=', so closing is rejected right up to expiry.
+test('a non-early-closable plan cannot be closed on its expiry day', { skip: skip() }, async () => {
+  // A plan that forbids early close.
+  const { rows: [plan] } = await pool.query(
+    `INSERT INTO plans (name, price, period, min_qty, auto_close, allow_early_close, allow_pause, allow_renew)
+     VALUES ('No Early Close', 1000, 'monthly', 1, FALSE, FALSE, TRUE, TRUE) RETURNING id`);
+  // An active subscription for customer #1 whose expiry date is today.
+  const { rows: [sub] } = await pool.query(
+    `INSERT INTO subscriptions (customer_id, plan_id, start_date, expiry_date, payment_term_days, status, next_invoice_date)
+     VALUES (1, $1, $2, $3, 15, 'active', $3) RETURNING id`,
+    [plan.id, addDays(today, -30), today]);
+
+  const res = await request(app).post(`/api/subscriptions/${sub.id}/transition`)
+    .set(bearer(tokens.customer)).send({ to: 'closed' });
+  assert.equal(res.status, 409); // blocked: expiry is today, early close not allowed
+});
+
+// --- resume from pause must not drop an already-due period -----------------
+// When a subscription is paused while it already has a due (past) next_invoice_date,
+// resuming must KEEP that earlier anchor so the owed period is still billed, rather than
+// pushing the anchor forward to today and silently losing that invoice.
+test('resuming a subscription keeps a next_invoice_date that was already due before the pause', { skip: skip() }, async () => {
+  const dueBefore = addDays(today, -5); // was due 5 days ago
+  // Paused 2 days ago, with the due date (5 days ago) predating the pause.
+  const { rows: [sub] } = await pool.query(
+    `INSERT INTO subscriptions (customer_id, plan_id, start_date, expiry_date, payment_term_days, status, next_invoice_date, paused_at)
+     VALUES (1, 1, $1, $2, 15, 'paused', $3, now() - interval '2 days') RETURNING id`,
+    [addDays(today, -40), addYears(today, 1), dueBefore]);
+
+  const res = await request(app).post(`/api/subscriptions/${sub.id}/transition`)
+    .set(bearer(tokens.customer)).send({ to: 'active' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.status, 'active');
+  // The already-due anchor is preserved (NOT advanced to today).
+  assert.equal(res.body.next_invoice_date.slice(0, 10), dueBefore);
+});
+
+// A period that only came due DURING the pause should still be skipped (not billed retroactively).
+test('resuming a subscription skips a period that only came due while paused', { skip: skip() }, async () => {
+  const dueDuringPause = addDays(today, -1); // came due yesterday
+  const { rows: [sub] } = await pool.query(
+    `INSERT INTO subscriptions (customer_id, plan_id, start_date, expiry_date, payment_term_days, status, next_invoice_date, paused_at)
+     VALUES (1, 1, $1, $2, 15, 'paused', $3, now() - interval '10 days') RETURNING id`,
+    [addDays(today, -40), addYears(today, 1), dueDuringPause]);
+
+  const res = await request(app).post(`/api/subscriptions/${sub.id}/transition`)
+    .set(bearer(tokens.customer)).send({ to: 'active' });
+  assert.equal(res.status, 200);
+  // Anchor moved forward to today - the paused period is not billed retroactively.
+  assert.equal(res.body.next_invoice_date.slice(0, 10), today);
+});
+
+function addYears(iso, n) { const d = new Date(iso + 'T00:00:00Z'); d.setUTCFullYear(d.getUTCFullYear() + n); return d.toISOString().slice(0, 10); }

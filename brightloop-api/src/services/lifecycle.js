@@ -41,7 +41,7 @@ function transitionSubscription(pool, id, to, { userId } = {}) {
       throw new HttpError(409, 'The plan is no longer available');
     }
     if (to === 'paused' && !s.allow_pause) throw new HttpError(409, 'This plan cannot be paused');
-    if (to === 'closed' && toDateStr(s.expiry_date) > today && !s.allow_early_close) {
+    if (to === 'closed' && toDateStr(s.expiry_date) >= today && !s.allow_early_close) {
       throw new HttpError(409, 'This plan cannot be closed before its expiry date');
     }
 
@@ -49,9 +49,15 @@ function transitionSubscription(pool, id, to, { userId } = {}) {
     if (to === 'active' && s.status === 'confirmed') {
       sql = `UPDATE subscriptions SET status='active', next_invoice_date = COALESCE(next_invoice_date, start_date) WHERE id=$1 RETURNING *`;
     } else if (to === 'active') {
-      // Resume from pause: skip the paused periods instead of billing them retroactively.
+      // Resume from pause: skip the periods spent paused rather than billing them retroactively,
+      // BUT never drop a period that was already due (next_invoice_date in the past) before the
+      // pause - that invoice is genuinely owed, so keep the earlier anchor and let billing catch up.
       sql = `UPDATE subscriptions SET status='active', paused_at=NULL,
-                    next_invoice_date = GREATEST(next_invoice_date, CURRENT_DATE) WHERE id=$1 RETURNING *`;
+                    next_invoice_date = CASE
+                      WHEN next_invoice_date < COALESCE(paused_at::date, CURRENT_DATE)
+                        THEN next_invoice_date
+                      ELSE GREATEST(next_invoice_date, CURRENT_DATE)
+                    END WHERE id=$1 RETURNING *`;
     } else if (to === 'paused') {
       sql = `UPDATE subscriptions SET status='paused', paused_at=now() WHERE id=$1 RETURNING *`;
     } else if (to === 'closed') {
