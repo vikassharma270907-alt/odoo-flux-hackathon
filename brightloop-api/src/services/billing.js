@@ -8,6 +8,13 @@ const MAX_PERIODS_PER_RUN = 366; // safety valve for very old daily subscription
  * Bill ONE subscription for every period that is due up to `asOf`.
  * Runs in a single transaction. Safe to call twice: the UNIQUE(subscription_id, period_start)
  * constraint means a period can never be invoiced twice, and a missed period is picked up next run.
+ *
+ * @param {import('pg').Pool} pool - PostgreSQL connection pool
+ * @param {number} subscriptionId - Target subscription ID to bill
+ * @param {object} [opts] - Billing options
+ * @param {string} [opts.asOf] - Cutoff date string (ISO YYYY-MM-DD), defaults to today
+ * @param {boolean} [opts.autoConfirm=false] - Whether generated invoices should be confirmed immediately
+ * @returns {Promise<{ subscriptionId: number, created: object[], skipped: number }>}
  */
 async function billSubscription(pool, subscriptionId, { asOf = todayISO(), autoConfirm = false } = {}) {
   const client = await pool.connect();
@@ -124,6 +131,13 @@ async function billSubscription(pool, subscriptionId, { asOf = todayISO(), autoC
 /**
  * The "billing day" button: bill every active subscription that is due.
  * One failing subscription never blocks the others - it is reported in `failed`.
+ *
+ * @param {import('pg').Pool} pool - PostgreSQL connection pool
+ * @param {object} [opts] - Batch options
+ * @param {string} [opts.asOf] - Cutoff date string (ISO YYYY-MM-DD), defaults to today
+ * @param {boolean} [opts.autoConfirm=false] - Whether generated invoices should be confirmed immediately
+ * @param {number|null} [opts.subscriptionId=null] - Optional single subscription filter
+ * @returns {Promise<{ asOf: string, due: number, invoicesCreated: number, periodsSkipped: number, failed: object[], invoices: object[] }>}
  */
 async function runBilling(pool, { asOf = todayISO(), autoConfirm = false, subscriptionId = null } = {}) {
   const params = [asOf];
