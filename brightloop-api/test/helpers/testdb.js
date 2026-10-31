@@ -12,6 +12,18 @@ const path = require('path');
 
 const TEST_URL = process.env.TEST_DATABASE_URL
   || 'postgresql://postgres:postgres@localhost:5432/subscriptions_test';
+
+// Safety guard: resetSchema() runs a destructive DROP SCHEMA. Refuse to run unless the
+// target database name clearly looks like a throwaway test database, so a mis-set
+// TEST_DATABASE_URL can never wipe the real `subscriptions` demo data.
+const dbName = (TEST_URL.split('/').pop() || '').split('?')[0];
+if (!/test/i.test(dbName)) {
+  throw new Error(
+    `Refusing to run integration tests against database "${dbName}". `
+    + 'The database name must contain "test" (e.g. subscriptions_test). '
+    + 'Set TEST_DATABASE_URL to a dedicated test database.');
+}
+
 process.env.DATABASE_URL = TEST_URL;
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'integration-test-secret-please-change';
 
@@ -20,7 +32,7 @@ const { pool } = require('../../src/db');
 
 const schemaSql = fs.readFileSync(path.join(__dirname, '..', '..', 'db', 'schema.sql'), 'utf8');
 
-// Rebuild a clean schema. Safe because this only ever runs against subscriptions_test.
+// Rebuild a clean schema. Only ever runs against a *_test database (guarded above).
 async function resetSchema() {
   await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
   await pool.query(schemaSql);

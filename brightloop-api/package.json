@@ -9,7 +9,7 @@
     "db:seed": "node db/seed.js --reset",
     "test": "node --test test/rules.test.js test/billing.test.js test/util.test.js test/access.test.js",
     "test:integration": "node --test test/integration.test.js",
-    "test:all": "node --test test/*.test.js"
+    "test:all": "npm test && npm run test:integration"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
