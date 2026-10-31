@@ -19,7 +19,6 @@ const app = require('../src/app');
 
 const today = new Date().toISOString().slice(0, 10);
 let fixture;
-let dbUp = true;
 // Log the shared roles in ONCE and reuse their tokens, so the module-level login
 // rate-limiter (10 per IP+email per window) is not tripped by the test suite itself.
 const tokens = {};
@@ -31,6 +30,9 @@ const login = async (email, password) => {
 const bearer = (t) => ({ Authorization: `Bearer ${t}` });
 
 // --- lifecycle -------------------------------------------------------------
+// If the test database is unreachable we FAIL FAST (close the pool and rethrow) rather than
+// letting the pg pool keep retrying and hang the whole run until the harness timeout.
+// Recreate the DB with:  docker exec <db-container> psql -U postgres -c "CREATE DATABASE subscriptions_test;"
 test.before(async () => {
   try {
     await resetSchema();
@@ -39,14 +41,15 @@ test.before(async () => {
     tokens.staff = await login('staff@brightloop.test', 'Staff@12345');
     tokens.customer = await login('customer@brightloop.test', 'Customer@123');
   } catch (err) {
-    dbUp = false;
-    // eslint-disable-next-line no-console
-    console.error('\n[integration] test database unreachable, skipping integration tests:\n ', err.message, '\n');
+    await pool.end().catch(() => {}); // release connections so the process can exit
+    throw new Error(
+      `[integration] setup failed - is the test database reachable? ${err.message}\n`
+      + 'Create it with: docker exec <db> psql -U postgres -c "CREATE DATABASE subscriptions_test;"');
   }
 });
 test.after(async () => { await pool.end().catch(() => {}); });
 
-const skip = () => !dbUp;
+const skip = () => false;
 
 // --- auth ------------------------------------------------------------------
 test('signup rejects a weak password with 400 and field details', { skip: skip() }, async () => {
