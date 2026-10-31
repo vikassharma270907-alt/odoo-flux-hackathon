@@ -60,6 +60,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# SQLite (local/demo database)
+*.db
+*.sqlite3
+
 # Odoo specific
 *.dump
 filestore/
@@ -87,3 +91,4 @@ out/
 .DS_Store
 Thumbs.db
 desktop.ini
+

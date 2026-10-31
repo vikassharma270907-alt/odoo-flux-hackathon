@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ app_name }}</title>
+  <style>
+    :root { --purple: #714b67; --gray: #8f8f8f; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           margin: 0; background: #faf8fb; color: #2b2b2b; }
+    header { background: var(--purple); color: #fff; padding: 2rem 1.5rem; }
+    header h1 { margin: 0 0 .25rem; font-size: 1.6rem; }
+    header p { margin: 0; opacity: .85; }
+    main { max-width: 820px; margin: 2rem auto; padding: 0 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 10px; padding: 1.1rem 1.25rem; }
+    .card h3 { margin: 0 0 .4rem; color: var(--purple); font-size: 1rem; }
+    .card p { margin: 0; font-size: .9rem; color: #555; }
+    a.btn { display: inline-block; margin-top: 1.5rem; background: var(--purple);
+            color: #fff; text-decoration: none; padding: .6rem 1.1rem; border-radius: 8px; }
+    code { background: #f0ecf1; padding: .1rem .35rem; border-radius: 4px; }
+    footer { max-width: 820px; margin: 1rem auto 3rem; padding: 0 1.5rem; color: #888; font-size: .82rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ app_name }}</h1>
+    <p>Plans, subscriptions, and recurring billing in one place.</p>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="card"><h3>Accounts &amp; Roles</h3><p>Admin, staff, and customer portal with JWT auth and a strict password policy.</p></div>
+      <div class="card"><h3>Products &amp; Plans</h3><p>Variants with price add-ons, billing periods, and per-plan lifecycle rules.</p></div>
+      <div class="card"><h3>Subscriptions</h3><p>Quotation templates and a Draft → Active → Closed lifecycle.</p></div>
+      <div class="card"><h3>Automated Billing</h3><p>Idempotent invoice generation with auto taxes and discounts.</p></div>
+      <div class="card"><h3>Payments</h3><p>Record payments by method and track paid vs. outstanding.</p></div>
+      <div class="card"><h3>Finance Reports</h3><p>Active subscriptions, revenue, outstanding, and overdue — in SQL, under 2s.</p></div>
+    </div>
+    <a class="btn" href="/login">Open the Dashboard</a>
+    <a class="btn" href="/docs" style="background:#8f8f8f;margin-left:.5rem;">API Explorer</a>
+    <p style="margin-top:1.5rem;font-size:.9rem;color:#555;">
+      Demo admin: <code>admin@brightloop.io</code> / <code>Admin@1234</code>
+    </p>
+  </main>
+  <footer>
+    Odoo x FLUX Lucknow Hackathon '26 — Brightloop Subscription Management System.
+  </footer>
+</body>
+</html>

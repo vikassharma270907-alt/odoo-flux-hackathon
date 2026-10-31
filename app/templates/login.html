@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block body %}
+<h1>Brightloop Subscription Management</h1>
+<div class="card">
+  <h2 style="margin-top:0;">Sign in</h2>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <label>Email</label>
+    <input type="email" name="email" value="{{ email or '' }}" required />
+    <label>Password</label>
+    <input type="password" name="password" required />
+    <div style="margin-top:1.1rem;">
+      <button class="btn" type="submit">Sign in</button>
+    </div>
+  </form>
+  <p class="muted" style="margin-top:1.2rem;">
+    Demo admin: <code>admin@brightloop.io</code> / <code>Admin@1234</code><br/>
+    Demo customer: <code>customer@acme.com</code> / <code>Customer@123</code>
+  </p>
+</div>
+{% endblock %}

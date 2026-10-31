@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Brightloop{% endblock %} · Brightloop</title>
+  <style>
+    :root { --purple:#714b67; --purple-d:#5a3b52; --gray:#8f8f8f; --bg:#faf8fb;
+            --ok:#1a7f5a; --warn:#c0392b; --line:#ececec; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; margin:0;
+           background:var(--bg); color:#2b2b2b; }
+    a { color:var(--purple); }
+    nav { background:var(--purple); color:#fff; display:flex; align-items:center;
+          gap:1.2rem; padding:.8rem 1.5rem; }
+    nav .brand { font-weight:700; font-size:1.05rem; }
+    nav a { color:#fff; text-decoration:none; opacity:.9; font-size:.9rem; }
+    nav a:hover { opacity:1; text-decoration:underline; }
+    nav .spacer { flex:1; }
+    nav .who { font-size:.82rem; opacity:.85; }
+    main { max-width:1000px; margin:1.8rem auto; padding:0 1.5rem; }
+    h1 { font-size:1.4rem; color:var(--purple); margin:0 0 1.2rem; }
+    h2 { font-size:1.05rem; margin:1.6rem 0 .6rem; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; }
+    .stat { background:#fff; border:1px solid var(--line); border-radius:10px; padding:1rem 1.2rem; }
+    .stat .label { font-size:.78rem; color:#888; text-transform:uppercase; letter-spacing:.03em; }
+    .stat .value { font-size:1.5rem; font-weight:700; margin-top:.3rem; color:var(--purple-d); }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line);
+            border-radius:10px; overflow:hidden; font-size:.88rem; }
+    th,td { text-align:left; padding:.6rem .8rem; border-bottom:1px solid var(--line); }
+    th { background:#f3eff2; color:#555; font-weight:600; }
+    tr:last-child td { border-bottom:none; }
+    .badge { display:inline-block; padding:.12rem .5rem; border-radius:20px; font-size:.74rem; font-weight:600; }
+    .b-draft{background:#eee;color:#555;} .b-quotation{background:#fde9c8;color:#8a5a00;}
+    .b-confirmed{background:#d6e4ff;color:#1b4fa0;} .b-active{background:#d3f0e0;color:var(--ok);}
+    .b-paused{background:#fde1e1;color:#9a3b3b;} .b-closed{background:#e4e4e4;color:#666;}
+    .b-paid{background:#d3f0e0;color:var(--ok);} .b-cancelled{background:#eee;color:#888;}
+    .b-overdue{background:#fde1e1;color:var(--warn);}
+    .btn { display:inline-block; background:var(--purple); color:#fff; text-decoration:none;
+           padding:.55rem 1rem; border-radius:8px; border:none; cursor:pointer; font-size:.88rem; }
+    .btn:hover{background:var(--purple-d);} .btn.secondary{background:#fff;color:var(--purple);border:1px solid var(--purple);}
+    form.inline{display:inline;}
+    .card { background:#fff; border:1px solid var(--line); border-radius:10px; padding:1.4rem; max-width:420px; }
+    label{display:block;font-size:.85rem;margin:.7rem 0 .25rem;color:#555;}
+    input,select{width:100%;padding:.55rem;border:1px solid #ddd;border-radius:7px;font-size:.9rem;}
+    .err{background:#fde1e1;color:var(--warn);padding:.6rem .8rem;border-radius:8px;font-size:.85rem;margin-bottom:1rem;}
+    .muted{color:#888;font-size:.82rem;}
+    .toolbar{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;}
+  </style>
+</head>
+<body>
+  {% if user %}
+  <nav>
+    <span class="brand">⟳ Brightloop</span>
+    {% if user.role.value in ['admin','staff'] %}
+      <a href="/dashboard">Dashboard</a>
+      <a href="/ui/subscriptions">Subscriptions</a>
+      <a href="/ui/invoices">Invoices</a>
+    {% else %}
+      <a href="/portal">My Subscriptions</a>
+      <a href="/ui/invoices">My Invoices</a>
+    {% endif %}
+    <span class="spacer"></span>
+    <span class="who">{{ user.email }} · {{ user.role.value }}</span>
+    <a href="/logout">Log out</a>
+  </nav>
+  {% endif %}
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Autonomy Preference Reminder",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "agent",
+        "prompt": "This workspace prefers autonomous operation. Default to action on routine work (file edits, reads, searches, builds, tests, linters, installing dependencies, running project scripts) without pausing to ask for confirmation. Infer missing details from the codebase and keep going rather than stopping. Still check in before destructive or hard-to-reverse operations (mass/recursive deletes, dropping databases), auth/access-control changes, production or live infrastructure changes, and before sending code or secrets to third parties. Keep explanations short and report what was done after the fact."
+      }
+    }
+  ]
+}

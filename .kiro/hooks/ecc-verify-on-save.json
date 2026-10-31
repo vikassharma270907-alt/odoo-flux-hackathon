@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "ECC Verify on Save",
+      "trigger": "PostFileSave",
+      "description": "ECC-style verify step: after saving a code file, check build/tests still pass",
+      "matcher": "\\.(ts|tsx|js|jsx|py|go|rs|java)$",
+      "action": {
+        "type": "agent",
+        "prompt": "A code file was just saved. Following the ECC \"verify\" step: if there is a build or test command for this project, make sure the change still compiles and that relevant tests pass. Report any new errors introduced by this change."
+      }
+    }
+  ]
+}

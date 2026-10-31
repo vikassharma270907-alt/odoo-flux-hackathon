@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block body %}
+<h1>Finance Dashboard</h1>
+<p class="muted">As of {{ summary.as_of }}</p>
+
+<div class="cards">
+  <div class="stat"><div class="label">Active subscriptions</div><div class="value">{{ summary.active_subscriptions }}</div></div>
+  <div class="stat"><div class="label">Total subscriptions</div><div class="value">{{ summary.total_subscriptions }}</div></div>
+  <div class="stat"><div class="label">Revenue collected</div><div class="value">₹{{ "%.2f"|format(summary.revenue_collected) }}</div></div>
+  <div class="stat"><div class="label">Outstanding</div><div class="value">₹{{ "%.2f"|format(summary.outstanding) }}</div></div>
+  <div class="stat"><div class="label">Overdue invoices</div><div class="value">{{ summary.overdue_invoices }}</div></div>
+  <div class="stat"><div class="label">Overdue amount</div><div class="value">₹{{ "%.2f"|format(summary.overdue_amount) }}</div></div>
+</div>
+
+<div class="toolbar" style="margin-top:1.6rem;">
+  <form class="inline" method="post" action="/ui/billing-run">
+    <button class="btn" type="submit">Run billing cycle</button>
+  </form>
+  <a class="btn secondary" href="/ui/subscriptions">View subscriptions</a>
+  <a class="btn secondary" href="/ui/invoices">View invoices</a>
+</div>
+
+{% if message %}<p class="muted" style="margin-top:1rem;">{{ message }}</p>{% endif %}
+
+<h2>Recent subscriptions</h2>
+<table>
+  <thead><tr><th>Number</th><th>Customer</th><th>Plan</th><th>Status</th><th>Start</th><th>Expiry</th></tr></thead>
+  <tbody>
+  {% for s in subscriptions %}
+    <tr>
+      <td>{{ s.number }}</td>
+      <td>{{ s.customer_id }}</td>
+      <td>{{ s.plan.name if s.plan else '—' }}</td>
+      <td><span class="badge b-{{ s.status.value }}">{{ s.status.value }}</span></td>
+      <td>{{ s.start_date or '—' }}</td>
+      <td>{{ s.expiry_date or '—' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="muted">No subscriptions yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
